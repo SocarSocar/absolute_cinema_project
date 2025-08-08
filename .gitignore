@@ -1,0 +1,28 @@
+# Envs / OS / IDE
+env/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.DS_Store
+.idea/
+.vscode/
+.ipynb_checkpoints/
+
+# Données & sorties
+data/
+logs/
+tmp/
+*.db
+*.sqlite*
+*.parquet
+*.feather
+*.csv.gz
+*.jsonl
+
+# Secrets
+.env
+.env.*
+*.key
+*.pem

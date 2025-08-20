@@ -1,3 +1,31 @@
+# ============================================================
+# Script d’automatisation de récupération des IDs TMDB
+#
+# Objectif :
+#   - Télécharger chaque jour les fichiers d’export officiels de TMDB
+#     (liste des films et des séries, compressés en .json.gz).
+#   - Les décompresser, compter les lignes (= nombre d’IDs).
+#   - Fusionner ces données dans les fichiers finaux du projet via
+#     un script Python dédié (merge_tmdb_into_final.py).
+#   - Enregistrer les logs d’exécution et garder la date du dernier
+#     succès pour éviter de relancer plusieurs fois dans la même journée.
+#
+# Pourquoi :
+#   Ce script sert de point d’entrée unique pour maintenir à jour
+#   les bases locales de films et de séries. Il automatise le cycle
+#   complet : téléchargement, intégration, nettoyage, suivi.
+#
+# Usage :
+#   Lancer directement : ./fetch_dumps_daily.sh
+#   → Les données mises à jour sont écrites dans data/out/
+#   → Les logs sont écrits dans logs/fetch_ids.log
+#   → La date du dernier succès est dans state/last_success_date.txt
+#
+# Bénéfice :
+#   Une seule commande garde les datasets films/séries toujours à jour,
+#   sans doublons, avec suivi clair des réussites/erreurs.
+# ============================================================
+
 #!/usr/bin/env bash
 # Utilise Bash comme interpréteur et configure un mode strict d'exécution
 

@@ -1,3 +1,33 @@
+"""
+Ce script sert à maintenir un fichier JSONL « final » (movies ou tv) à jour
+en fusionnant chaque jour les nouveaux dumps récupérés depuis TMDB.  
+
+Problème de départ :
+- Chaque extraction journalière de TMDB (src_jsonl) contient beaucoup de
+  doublons par rapport aux extractions précédentes.
+- On veut conserver un seul fichier cumulatif (final_jsonl) avec toutes les
+  entrées uniques, sans répéter les mêmes ID, et corriger quelques petites
+  incohérences de champs (par ex. ajouter 'title' s’il manque mais que
+  'original_title' existe).
+
+Ce que fait concrètement le script :
+1. Relit le fichier final existant (final_jsonl) et en dresse la liste des IDs
+   déjà présents, en supprimant les doublons éventuels.
+2. Lit le fichier source du jour (src_jsonl) et ne garde que les objets dont
+   l’ID n’est pas déjà connu.
+3. Ajoute ces nouvelles entrées au final, puis réécrit le fichier final de
+   manière atomique (sécurité : on écrit d’abord un fichier temporaire, puis
+   on le remplace).
+4. Affiche un résumé : combien d’entrées ont été ajoutées et combien il y en
+   a au total.
+
+Résultat :
+- Un seul fichier final JSONL cumulatif, toujours propre et sans doublons,
+  qui peut être utilisé pour les traitements suivants.
+- Les dumps journaliers restent disponibles mais servent uniquement de
+  source temporaire.
+"""
+
 #!/usr/bin/env python3
 import os, sys, json, tempfile
 

@@ -1,3 +1,16 @@
+"""
+Ce script analyse un fichier JSON contenant des informations sur des films.
+
+Fonctionnalités principales :
+- Détection des doublons exacts (films identiques sur tous les champs)
+- Détection des doublons basés uniquement sur l'identifiant 'id'
+- Comptage du nombre total de films
+- Affichage du top 50 des films selon leur popularité
+
+Le fichier d'entrée attendu est 'data/out/movie_dumps.json', où chaque ligne correspond à un objet JSON représentant un film.
+Les résultats sont affichés dans la console pour faciliter l'analyse et le contrôle qualité des données.
+"""
+
 import json
 from collections import Counter
 

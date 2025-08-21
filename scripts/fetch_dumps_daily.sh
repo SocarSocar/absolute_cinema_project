@@ -76,10 +76,13 @@ curl_get() { curl -fsSL --retry 5 --retry-delay 2 -o "$2" "$1"; }
 if curl_get "https://files.tmdb.org/p/exports/movie_ids_${MM}_${DD}_${YYYY}.json.gz" "$MOV_GZ"; then
   TMP_MOV="$OUT/.tmp_movie_ids_${STAMP}.jsonl"                    # Fichier temporaire décompressé
   zcat "$MOV_GZ" > "$TMP_MOV"                                     # Décompression .gz en JSONL
-  LINES_MOV=$(wc -l < "$TMP_MOV" | awk '{print $1}')               # Nombre de lignes (= nb d'IDs)
-  python3 "$ROOT/scripts/merge_tmdb_into_final.py" movies "$TMP_MOV" "$MOV_OUT"  # Fusion dans le fichier final
-  rm -f "$MOV_GZ" "$TMP_MOV"                                      # Nettoyage
-  log "OK movies ${STAMP} merged=${LINES_MOV}"                    # Log succès
+  LINES_MOV=$(wc -l < "$TMP_MOV" | awk '{print $1}')   # Compte le nombre de lignes dans le fichier temporaire
+  PY_MOV_OUT="$(python3 "$ROOT/scripts/merge_tmdb_into_final.py" movies "$TMP_MOV" "$MOV_OUT")"  # Exécute le script Python et capture sa sortie
+  ADDED_MOV="$(printf '%s' "$PY_MOV_OUT" | awk -F'added=' '{print $2}' | awk '{print $1}')"      # Extrait le nombre ajouté depuis la sortie Python
+  TOTAL_MOV="$(printf '%s' "$PY_MOV_OUT" | awk -F'total=' '{print $2}' | awk '{print $1}')"      # Extrait le total cumulé depuis la sortie Python
+  rm -f "$MOV_GZ" "$TMP_MOV"                               # Supprime les fichiers temporaires (.gz et décompressé)
+  log "OK movies ${STAMP} added=${ADDED_MOV} total=${TOTAL_MOV}"  # Écrit dans le log le résumé au format voulu
+
 else
   log "ERROR movies ${STAMP} download failed"                     # Log erreur
 fi
@@ -88,10 +91,12 @@ fi
 if curl_get "https://files.tmdb.org/p/exports/tv_series_ids_${MM}_${DD}_${YYYY}.json.gz" "$TV_GZ"; then
   TMP_TV="$OUT/.tmp_tv_series_ids_${STAMP}.jsonl"                  # Fichier temporaire décompressé
   zcat "$TV_GZ" > "$TMP_TV"                                        # Décompression .gz en JSONL
-  LINES_TV=$(wc -l < "$TMP_TV" | awk '{print $1}')                  # Nombre de lignes (= nb d'IDs)
-  python3 "$ROOT/scripts/merge_tmdb_into_final.py" tv "$TMP_TV" "$TV_OUT"  # Fusion dans le fichier final
-  rm -f "$TV_GZ" "$TMP_TV"                                         # Nettoyage
-  log "OK tv_series ${STAMP} merged=${LINES_TV}"                   # Log succès
+  LINES_TV=$(wc -l < "$TMP_TV" | awk '{print $1}')   # Compte le nombre de lignes dans le fichier temporaire
+  PY_TV_OUT="$(python3 "$ROOT/scripts/merge_tmdb_into_final.py" tv "$TMP_TV" "$TV_OUT")"        # Exécute le script Python et capture sa sortie
+  ADDED_TV="$(printf '%s' "$PY_TV_OUT" | awk -F'added=' '{print $2}' | awk '{print $1}')"       # Extrait le nombre ajouté depuis la sortie Python
+  TOTAL_TV="$(printf '%s' "$PY_TV_OUT" | awk -F'total=' '{print $2}' | awk '{print $1}')"       # Extrait le total cumulé depuis la sortie Python
+  rm -f "$TV_GZ" "$TMP_TV"                               # Supprime les fichiers temporaires (.gz et décompressé)
+  log "OK tv_series ${STAMP} added=${ADDED_TV} total=${TOTAL_TV}"  # Écrit dans le log le résumé au format voulu
 else
   log "ERROR tv_series ${STAMP} download failed"                   # Log erreur
 fi

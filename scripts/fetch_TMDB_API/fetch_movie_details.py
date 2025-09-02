@@ -59,7 +59,7 @@ from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 ROOT = Path(__file__).resolve().parents[2]  # -> projet_absolute_cinema/
 ENV_PATH = ROOT / ".env"
 DATA_DIR = ROOT / "data" / "out"
-LOGS_DIR = ROOT / "logs"
+LOGS_DIR = ROOT / "logs" / "fetch_TMDB_API"
 INPUT_DUMPS = DATA_DIR / "movie_dumps.json"         # NDJSON : 1 objet JSON par ligne
 OUTPUT_NDJSON = DATA_DIR / "movie_details.ndjson"   # 1 film par ligne
 TMP_OUTPUT = DATA_DIR / "movie_details.tmp.ndjson"  # écriture atomique
@@ -70,7 +70,7 @@ TMDB_API_HOST = "https://api.themoviedb.org/3"
 EXTRA_PARAMS = {}  # ex: {"language": "en-US"} si souhaité
 
 # ========= Concurrence / Rate limit =========
-TARGET_RPS = 50
+TARGET_RPS = 500
 MAX_WORKERS = 64
 MAX_IN_FLIGHT = MAX_WORKERS * 4
 MAX_RETRIES_PER_ID = 6

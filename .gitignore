@@ -12,6 +12,7 @@ __pycache__/
 
 # Données & sorties
 data
+state
 logs/
 tmp/
 *.db

@@ -24,7 +24,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 IDS="$ROOT/data/ids"     # Dépôt temporaire des archives .gz téléchargées.
 OUT="$ROOT/data/out"     # Fichiers JSONL cumulés, prêts pour la suite du pipeline.
 STATE="$ROOT/state"      # État persistant minimal (date de dernier succès).
-LOGS="$ROOT/logs"        # Journaux d’exécution (audit, debug, monitoring).
+LOGS="$ROOT/logs/dumps"        # Journaux d’exécution (audit, debug, monitoring).
 
 mkdir -p "$IDS" "$OUT" "$STATE" "$LOGS"
 

@@ -29,10 +29,17 @@ Caractéristiques :
 - NDJSON : projet_absolute_cinema/data/out/movie_details.ndjson
 - Lecture des IDs depuis : projet_absolute_cinema/data/out/movie_dumps.json (NDJSON)
 - Auth Bearer dans : projet_absolute_cinema/.env (clé TMDB_bearer ou TMDB_BEARER)
-- Limitation de débit ~40 RPS (token bucket), concurrency threads
+- Limitation de débit ~50 RPS (token bucket), concurrency threads
 - Gestion 429 + backoff + retries
-- Log de synthèse ajouté à logs/app.log : "DD/MM/YYYY : added X movie details, N error 404, ..."
+- Log de synthèse ajouté à logs/app.log :
+  "DD/MM/YYYY : added X movie details / updated Y movie details / errors <compte-détaillé> / total : N"
 - Aucune dépendance externe (stdlib)
+
+Ajouts :
+- Incrémentalité sans index externe :
+  - Ne requiert que les IDs nouveaux (absents du NDJSON) ET ceux dont la release_date est ≤ 30 jours avant la date du run.
+  - Copie streaming de l’existant vers un .tmp en excluant les IDs à rafraîchir, puis append des nouvelles/MAJ → écriture atomique.
+- Progression terminal : incrément 1 par 1 sur le total à traiter, via une ligne réécrite en place.
 """
 
 import json
@@ -41,6 +48,7 @@ import time
 import random
 import threading
 from collections import Counter, deque
+from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.parse import urlencode
@@ -48,26 +56,29 @@ from urllib.error import HTTPError, URLError
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 
 # ========= Chemins fixes =========
-ROOT = Path(__file__).resolve().parents[1]  # -> projet_absolute_cinema/
+ROOT = Path(__file__).resolve().parents[2]  # -> projet_absolute_cinema/
 ENV_PATH = ROOT / ".env"
 DATA_DIR = ROOT / "data" / "out"
 LOGS_DIR = ROOT / "logs"
 INPUT_DUMPS = DATA_DIR / "movie_dumps.json"         # NDJSON : 1 objet JSON par ligne
 OUTPUT_NDJSON = DATA_DIR / "movie_details.ndjson"   # 1 film par ligne
 TMP_OUTPUT = DATA_DIR / "movie_details.tmp.ndjson"  # écriture atomique
-APP_LOG = LOGS_DIR / "app.log"
+APP_LOG = LOGS_DIR / "movie_details.log"
 
 # ========= Config TMDB =========
 TMDB_API_HOST = "https://api.themoviedb.org/3"
-# Pas d'append_to_response : inutile pour les champs ciblés → charge réseau réduite
-EXTRA_PARAMS = {}  # ex: {"language": "en-US"} si souhaité, laissé vide pour éviter tout filtre
+EXTRA_PARAMS = {}  # ex: {"language": "en-US"} si souhaité
 
 # ========= Concurrence / Rate limit =========
-TARGET_RPS = 50                     # objectif ~40 requêtes/seconde
-MAX_WORKERS = 64                    # threads réseau concurrentiels
-MAX_IN_FLIGHT = MAX_WORKERS * 4     # bornage des futures soumises
-MAX_RETRIES_PER_ID = 6              # erreurs transitoires max
+TARGET_RPS = 50
+MAX_WORKERS = 64
+MAX_IN_FLIGHT = MAX_WORKERS * 4
+MAX_RETRIES_PER_ID = 6
 MAX_BACKOFF_SECONDS = 60.0
+
+# ========= Fenêtre de rafraîchissement =========
+DAYS_WINDOW = 30  # release_date ≤ now - 0 et ≥ now-30j → à rafraîchir
+
 
 # ========= RateLimiter (token bucket basique) =========
 class RateLimiter:
@@ -88,6 +99,7 @@ class RateLimiter:
                     return
                 sleep_for = self.per - (now - self._dq[0])
             time.sleep(sleep_for if sleep_for > 0 else 0.001)
+
 
 # ========= Utilitaires =========
 def load_bearer_from_env_file(env_path: Path) -> str:
@@ -140,6 +152,49 @@ def iter_unique_movie_ids(dumps_path: Path):
         sys.stderr.write(f"[WARN] movie_dumps.json: {parse_errors} lignes JSON invalides, {invalid_lines} sans id exploitable\n")
 
 
+def parse_date_safe(iso_str: str):
+    if not iso_str or not isinstance(iso_str, str):
+        return None
+    try:
+        # TMDB format 'YYYY-MM-DD'
+        return datetime.strptime(iso_str, "%Y-%m-%d").date()
+    except Exception:
+        return None
+
+
+def scan_existing_details(path: Path, window_days: int):
+    """
+    Retourne:
+      - all_ids: set de tous les IDs présents dans OUTPUT_NDJSON
+      - refresh_ids: set des IDs dont release_date ∈ [today-30j ; today]
+      - kept_lines_count: nombre de lignes valides lues (stat)
+    """
+    all_ids = set()
+    refresh_ids = set()
+    kept_lines = 0
+    if not path.exists():
+        return all_ids, refresh_ids, kept_lines
+
+    today = datetime.utcnow().date()
+    cutoff = today - timedelta(days=window_days)
+
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                obj = json.loads(line)
+            except Exception:
+                continue
+            mid = obj.get("id")
+            if not isinstance(mid, int):
+                continue
+            all_ids.add(mid)
+            kept_lines += 1
+            rd = parse_date_safe(obj.get("release_date"))
+            if rd is not None and cutoff <= rd <= today:
+                refresh_ids.add(mid)
+    return all_ids, refresh_ids, kept_lines
+
+
 # Compteurs d'erreurs thread-safe
 _error_counter = Counter()
 _err_lock = threading.Lock()
@@ -166,7 +221,7 @@ def tmdb_request_movie_details(movie_id: int, bearer: str, limiter: RateLimiter)
 
     while True:
         attempts += 1
-        limiter.acquire()  # verrou de débit global (~40 RPS)
+        limiter.acquire()
         req = Request(url, headers=headers, method="GET")
         try:
             with urlopen(req, timeout=45) as resp:
@@ -245,39 +300,133 @@ def project_movie_fields(d: dict) -> dict:
     }
 
 
-def append_summary_log(date_str: str, added: int):
+def append_summary_log(date_str: str, added: int, updated: int, total_lines: int):
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
-    parts = [f"{date_str} : added {added} movie details"]
-    for key, val in sorted(_error_counter.items()):
-        if val > 0:
-            parts.append(f"{val} error {key}")
-    line = ", ".join(parts) + "\n"
+    # erreurs détaillées
+    total_errors = sum(_error_counter.values())
+    if total_errors > 0:
+        errors_detail = " ; ".join(f"{k}={v}" for k, v in sorted(_error_counter.items()))
+        errors_part = f"errors {total_errors} / {errors_detail}"
+    else:
+        errors_part = "errors 0"
+
+    line = f"{date_str} : added {added} movie details / updated {updated} movie details / {errors_part} / total : {total_lines}\n"
     with APP_LOG.open("a", encoding="utf-8") as f:
         f.write(line)
+
+
+# ========= Affichage progressif =========
+_progress_lock = threading.Lock()
+_progress_state = {"processed": 0, "ok": 0, "total": 0, "added": 0, "updated": 0, "errors": 0}
+
+def _print_progress():
+    with _progress_lock:
+        proc = _progress_state["processed"]
+        tot = _progress_state["total"]
+        ok = _progress_state["ok"]
+        add = _progress_state["added"]
+        upd = _progress_state["updated"]
+        err = _progress_state["errors"]
+        sys.stderr.write(f"\r[PROGRESS] {proc}/{tot} | ok={ok} | added={add} | updated={upd} | errors={err}")
+        sys.stderr.flush()
 
 
 def main():
     bearer = load_bearer_from_env_file(ENV_PATH)
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+    # 1) Lire les IDs dumps
     ids = list(iter_unique_movie_ids(INPUT_DUMPS))
-    total = len(ids)
-    if total == 0:
+    if not ids:
         sys.stderr.write("[ERREUR] Aucun ID trouvé dans movie_dumps.json\n")
         sys.exit(1)
 
+    # 2) Scanner l'existant pour décider de l'incrémental sans index externe
+    existing_ids, refresh_ids, kept_lines = scan_existing_details(OUTPUT_NDJSON, DAYS_WINDOW)
+
+    # 3) Déterminer la cible : nouveaux OU à rafraîchir (release ≤ 30 jours)
+    targets = []
+    will_add = 0
+    will_update = 0
+    existing_ids_set = existing_ids  # alias
+
+    # Ajout : tous les IDs absents de l'existant
+    for mid in ids:
+        if mid not in existing_ids_set:
+            targets.append(mid)
+            will_add += 1
+
+    # Update : tous les IDs marqués à rafraîchir
+    for mid in (refresh_ids):
+        targets.append(mid)
+        will_update += 1
+
+    # Dédupliquer en préservant l’ordre d’origine (priorité aux "add" qui sont déjà dans l’ordre des dumps)
+    seen_target = set()
+    dedup_targets = []
+    for mid in targets:
+        if mid not in seen_target:
+            seen_target.add(mid)
+            dedup_targets.append(mid)
+    targets = dedup_targets
+
+    total_to_process = len(targets)
+    _progress_state["total"] = total_to_process
+    _progress_state["added"] = will_add
+    _progress_state["updated"] = will_update
+
+    if total_to_process == 0:
+        # Rien à faire : recopier tel quel vers tmp pour garantir atomicité si besoin
+        if OUTPUT_NDJSON.exists():
+            OUTPUT_NDJSON.replace(TMP_OUTPUT)
+            TMP_OUTPUT.replace(OUTPUT_NDJSON)
+        date_str = time.strftime("%d/%m/%Y")
+        append_summary_log(date_str, 0, 0, kept_lines)
+        sys.stderr.write("\n[OK] Aucun ID à traiter. Fichier inchangé.\n")
+        return
+
     limiter = RateLimiter(TARGET_RPS, per=1.0)
+
+    # 4) Préparer écriture : on recopie l'existant SAUF les IDs à rafraîchir
+    #    → évite de charger l'existant en mémoire, et garantit que les MAJ écraseront proprement
+    targets_set = set(targets)
+    copied_existing = 0
+    if OUTPUT_NDJSON.exists():
+        with OUTPUT_NDJSON.open("r", encoding="utf-8") as src, TMP_OUTPUT.open("w", encoding="utf-8") as dst:
+            for line in src:
+                try:
+                    obj = json.loads(line)
+                except Exception:
+                    continue
+                mid = obj.get("id")
+                if isinstance(mid, int) and mid in targets_set:
+                    # cet ID sera réécrit par la nouvelle version → skip la copie
+                    continue
+                # sinon, garder la ligne telle quelle
+                dst.write(line)
+                copied_existing += 1
+    else:
+        # créer le tmp vide si pas d'existant
+        TMP_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+        TMP_OUTPUT.write_text("", encoding="utf-8")
+
+    # 5) Téléchargement concurrent des cibles + écriture append
     added = 0
-    processed = 0
+    updated = 0
+    ok = 0
+
+    write_lock = threading.Lock()
+    progress_err_count = 0
 
     def worker(mid: int):
-        return tmdb_request_movie_details(mid, bearer, limiter)
+        return tmdb_request_movie_details(mid, bearer, limiter), mid
 
-    with TMP_OUTPUT.open("w", encoding="utf-8") as out, ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
-        it = iter(ids)
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex, TMP_OUTPUT.open("a", encoding="utf-8") as out:
+        it = iter(targets)
         futures = set()
 
-        for _ in range(min(MAX_IN_FLIGHT, total)):
+        # amorçage
+        for _ in range(min(MAX_IN_FLIGHT, total_to_process)):
             try:
                 futures.add(ex.submit(worker, next(it)))
             except StopIteration:
@@ -286,25 +435,47 @@ def main():
         while futures:
             done, futures = wait(futures, return_when=FIRST_COMPLETED)
             for fut in done:
-                data = fut.result()
-                processed += 1
+                data, mid = fut.result()
+                with _progress_lock:
+                    _progress_state["processed"] += 1
+
                 if data is not None:
                     proj = project_movie_fields(data)
-                    json.dump(proj, out, ensure_ascii=False, separators=(",", ":"))
-                    out.write("\n")
-                    added += 1
-                if processed % 500 == 0:
-                    sys.stderr.write(f"[INFO] {processed}/{total} traités | {added} ajoutés\n")
+                    line = json.dumps(proj, ensure_ascii=False, separators=(",", ":")) + "\n"
+                    with write_lock:
+                        out.write(line)
+                    ok += 1
+                    if mid in existing_ids_set:
+                        updated += 1
+                    else:
+                        added += 1
+                else:
+                    with _err_lock:
+                        progress_err_count = sum(_error_counter.values())
+                    with _progress_lock:
+                        _progress_state["errors"] = progress_err_count
+
+                with _progress_lock:
+                    _progress_state["ok"] = ok
+                _print_progress()
+
                 try:
                     futures.add(ex.submit(worker, next(it)))
                 except StopIteration:
                     pass
 
+    # 6) Remplacement atomique
     TMP_OUTPUT.replace(OUTPUT_NDJSON)
 
+    # 7) Total final = lignes recopiées + ok écrits
+    total_lines = copied_existing + ok
+
+    # 8) Log synthèse
     date_str = time.strftime("%d/%m/%Y")
-    append_summary_log(date_str, added)
-    sys.stderr.write(f"[OK] NDJSON écrit : {OUTPUT_NDJSON} | {added}/{total} ajoutés\n")
+    append_summary_log(date_str, added, updated, total_lines)
+
+    # 9) Fin
+    sys.stderr.write(f"\n[OK] NDJSON écrit : {OUTPUT_NDJSON} | added={added} | updated={updated} | kept={copied_existing} | total={total_lines}\n")
 
 
 if __name__ == "__main__":

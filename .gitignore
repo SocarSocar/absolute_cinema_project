@@ -27,3 +27,6 @@ tmp/
 .env.*
 *.key
 *.pem
+logs/
+logs/**
+*.log

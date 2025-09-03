@@ -13,7 +13,7 @@ __pycache__/
 # Données & sorties
 data
 state
-logs/
+logs
 tmp/
 *.db
 *.sqlite*

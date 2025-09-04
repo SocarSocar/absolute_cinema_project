@@ -2,105 +2,89 @@
 # -*- coding: utf-8 -*-
 
 """
-Récupère la liste des certifications MOVIE via /certification/movie/list.
-Aucun input d’IDs. Un appel unique -> N lignes (pays x certifications).
-Projection: country_code, certification, meaning. Pas de refresh par date.
+Récupère les détails d’une série TV via /tv/{series_id}.
+Utilise le module fetch_API_TMDB pour la logique commune.
 """
 
 import sys
-import json
 from pathlib import Path
 
-# Import module stable
+# Ajouter le dossier parent au path pour importer fetch_API_TMDB
 sys.path.insert(0, str(Path(__file__).parent))
-from fetch_API_TMDB import (
-    TMDBFetcher,
-    append_summary_log,
-    tmdb_request,
-    DATA_DIR,
-)
 
-class MovieCertificationsFetcher(TMDBFetcher):
+from fetch_API_TMDB import TMDBFetcher, select_list_of_dicts
+
+
+class TVSeriesDetailsFetcher(TMDBFetcher):
+    """Fetcher spécifique pour les détails de séries TV"""
+    
     def __init__(self):
         super().__init__(
-            input_file="_unused_input.json",            # non utilisé
-            output_file="certification_movies.ndjson",
-            log_file="certification_movies.log",
-            entity_type="certification_movies",
-            window_days=None,
-            date_field=None,
-            id_field="id",                              # sans impact ici
-            extra_params={},
+            input_file="tv_dumps.json",                   # fichier source avec les IDs de séries
+            output_file="tv_series_details.ndjson",       # fichier NDJSON de sortie
+            log_file="tv_series_details.log",            # fichier de log
+            entity_type="tv series details",             # type d’entité
+            window_days=30,                               # rafraîchir si besoin (30 jours)
+            date_field="first_air_date",                  # champ date de référence
+            id_field="id",                                # champ identifiant série
+            extra_params={}                               # paramètres supplémentaires
         )
-
-    def get_endpoint(self, _: int = 0) -> str:
-        return "/certification/movie/list"
-
-    def _project_rows(self, data: dict):
+    
+    def get_endpoint(self, entity_id: int) -> str:
+        """Construit l’endpoint pour récupérer les détails d’une série TV"""
+        return f"/tv/{entity_id}"
+    
+    def project_fields(self, data: dict) -> dict:
         """
-        TMDB payload:
-        {
-          "certifications": {
-            "US": [
-              {"certification":"R","meaning":"...","order":5},
-              ...
-            ],
-            "FR": [ ... ],
-            ...
-          }
+        Projection des champs spécifiques aux séries TV.
+        Champs principaux et listes aplaties.
+        """
+        return {
+            "content_id": data.get("id"),
+            "original_name": data.get("original_name"),
+            "name": data.get("name"),
+            "original_language": data.get("original_language"),
+            "overview": data.get("overview"),
+            "homepage": data.get("homepage"),
+            "poster_path": data.get("poster_path"),
+            "backdrop_path": data.get("backdrop_path"),
+            "status": data.get("status"),
+            "tagline": data.get("tagline"),
+            "popularity": data.get("popularity"),
+            "vote_average": data.get("vote_average"),
+            "vote_count": data.get("vote_count"),
+            "type": data.get("type"),
+            "first_air_date": data.get("first_air_date"),
+            "last_air_date": data.get("last_air_date"),
+            "number_of_seasons": data.get("number_of_seasons"),
+            "number_of_episodes": data.get("number_of_episodes"),
+            "in_production": data.get("in_production"),
+            "origin_country": data.get("origin_country"),  # liste de codes pays ISO_3166_1
+            "genres": select_list_of_dicts(
+                data.get("genres"),
+                ["id", "name"]
+            ),
+            "production_companies": select_list_of_dicts(
+                data.get("production_companies"),
+                ["id", "name", "origin_country"]
+            ),
+            "production_countries": select_list_of_dicts(
+                data.get("production_countries"),
+                ["iso_3166_1"]
+            ),
+            "spoken_languages": select_list_of_dicts(
+                data.get("spoken_languages"),
+                ["iso_639_1"]
+            )
         }
-        Sortie: une ligne par (country_code x certification).
-        """
-        rows = []
-        certs = data.get("certifications") or {}
-        if not isinstance(certs, dict):
-            return rows
 
-        for country_code, items in certs.items():
-            if not isinstance(items, list):
-                continue
-            for obj in items:
-                if not isinstance(obj, dict):
-                    continue
-                c = obj.get("certification")
-                m = obj.get("meaning")
-                if not isinstance(country_code, str) or not isinstance(c, str) or not isinstance(m, str):
-                    continue
-                rows.append({
-                    "country_code": country_code,
-                    "certification": c,
-                    "meaning": m,
-                })
-        return rows
-
-    def run(self):
-        # Appel unique
-        DATA_DIR.mkdir(parents=True, exist_ok=True)
-        data = tmdb_request(
-            self.get_endpoint(),
-            self.bearer,
-            self.limiter,
-            self.error_counter,
-            self.extra_params
-        )
-        rows = self._project_rows(data or {})
-
-        # Écriture atomique
-        self.tmp_path.parent.mkdir(parents=True, exist_ok=True)
-        with self.tmp_path.open("w", encoding="utf-8") as out:
-            for r in rows:
-                out.write(json.dumps(r, ensure_ascii=False, separators=(",", ":")) + "\n")
-        self.tmp_path.replace(self.output_path)
-
-        # Log synthèse
-        date_str = __import__("time").strftime("%d/%m/%Y")
-        total_lines = len(rows)
-        append_summary_log(self.log_path, date_str, total_lines, 0, total_lines, self.error_counter, self.entity_type)
-
-        sys.stderr.write(f"\n[OK] NDJSON écrit : {self.output_path} | rows={total_lines}\n")
 
 def main():
-    MovieCertificationsFetcher().run()
+    """Point d’entrée principal"""
+    fetcher = TVSeriesDetailsFetcher()
+    fetcher.run()
+
 
 if __name__ == "__main__":
     main()
+

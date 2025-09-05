@@ -31,6 +31,7 @@ EXECUTION_ORDER = [
     "Movies_ReleaseDates.py",
     "Movies_Reviews.py",
     "Movies_Translations.py",
+    "Movies_Certifications.py",
     "Movies_WatchProviders.py",
 
     # Séries TV (ordre important)
@@ -39,6 +40,7 @@ EXECUTION_ORDER = [
     "TVSeries_Content.py",
     "TVSeries_AlternativeTitles.py",
     "TVSeries_Credits.py",
+    "TVSeries_details.py",
     "TVSeries_ExternalID.py",
     "TVSeries_Keywords.py",
     "TVSeries_Reviews.py",

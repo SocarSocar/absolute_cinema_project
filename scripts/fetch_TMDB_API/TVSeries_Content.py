@@ -20,7 +20,7 @@ class TVSeriesContentRatingsFetcher(TMDBFetcher):
     
     def __init__(self):
         super().__init__(
-            input_file="tv_dumps.json",                        # fichier source avec les IDs de séries
+            input_file="tv_series_dumps.json",                        # fichier source avec les IDs de séries
             output_file="tv_series_content_ratings.ndjson",    # fichier NDJSON de sortie
             log_file="tv_series_content_ratings.log",          # fichier de log
             entity_type="tv series content ratings",           # type d’entité

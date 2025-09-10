@@ -20,7 +20,7 @@ class TVSeriesKeywordsFetcher(TMDBFetcher):
     
     def __init__(self):
         super().__init__(
-            input_file="tv_dumps.json",                   # fichier source avec les IDs de séries
+            input_file="tv_series_dumps.json",                   # fichier source avec les IDs de séries
             output_file="tv_series_keywords.ndjson",      # fichier NDJSON de sortie
             log_file="tv_series_keywords.log",           # fichier de log
             entity_type="tv series keywords",            # type d’entité

@@ -20,7 +20,7 @@ class TVSeriesCreditsFetcher(TMDBFetcher):
     
     def __init__(self):
         super().__init__(
-            input_file="tv_dumps.json",                   # fichier source avec les IDs de séries
+            input_file="tv_series_dumps.json",                   # fichier source avec les IDs de séries
             output_file="tv_series_credits.ndjson",       # fichier NDJSON de sortie
             log_file="tv_series_credits.log",            # fichier de log
             entity_type="tv series credits",             # type d’entité

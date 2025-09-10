@@ -20,7 +20,7 @@ class TVSeriesExternalIDsFetcher(TMDBFetcher):
     
     def __init__(self):
         super().__init__(
-            input_file="tv_dumps.json",               # fichier source avec les IDs de séries
+            input_file="tv_series_dumps.json",               # fichier source avec les IDs de séries
             output_file="tv_series_external_ids.ndjson", # fichier NDJSON de sortie
             log_file="tv_series_external_ids.log",    # fichier de log
             entity_type="tv series external ids",     # type d’entité

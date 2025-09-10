@@ -20,7 +20,7 @@ class TVSeriesAlternativeTitlesFetcher(TMDBFetcher):
     
     def __init__(self):
         super().__init__(
-            input_file="tv_dumps.json",                        # fichier source avec les IDs de séries
+            input_file="tv_series_dumps.json",                        # fichier source avec les IDs de séries
             output_file="tv_series_alternative_titles.ndjson", # fichier NDJSON de sortie
             log_file="tv_series_alternative_titles.log",       # fichier de log
             entity_type="tv series alternative titles",       # type d’entité

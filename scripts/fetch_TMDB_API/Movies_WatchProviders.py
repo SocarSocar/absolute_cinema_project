@@ -6,6 +6,10 @@ Récupère les watch providers MOVIES via /movie/{movie_id}/watch/providers.
 Cardinalité: 1 film -> N lignes (country_code x provider).
 Projection: id_movie, provider_id, provider_name, country_code.
 Pas de refresh basé sur une date.
+
+Important: si un film n’a AUCUNE offre, on écrit UNE ligne sentinelle:
+{ "id_movie": <id>, "provider_id": null, "provider_name": null, "country_code": null }
+→ évite de retraiter ce film aux runs suivants sans créer d’autre fichier.
 """
 
 import sys
@@ -26,6 +30,13 @@ from fetch_API_TMDB import (
     MAX_WORKERS,
     MAX_IN_FLIGHT,
 )
+
+def _to_int(x):
+    try:
+        return int(x)
+    except Exception:
+        return None
+
 
 class MovieWatchProvidersFetcher(TMDBFetcher):
     def __init__(self):
@@ -73,9 +84,9 @@ class MovieWatchProvidersFetcher(TMDBFetcher):
 
             seen = set()
             for obj in provider_objs:
-                pid = obj.get("provider_id")
+                pid = _to_int(obj.get("provider_id"))
                 pname = obj.get("provider_name")
-                if not isinstance(pid, int) or not isinstance(pname, str):
+                if pid is None or not isinstance(pname, str):
                     continue
                 key = (country_code, pid)
                 if key in seen:
@@ -104,8 +115,15 @@ class MovieWatchProvidersFetcher(TMDBFetcher):
     def run(self):
         DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-        # 1) IDs d'entrée (champ 'id' dans movie_dumps.json)
-        input_ids = list(iter_ndjson_ids(self.input_path, id_field=self.id_field))
+        # 1) IDs d'entrée (→ int, dédup)
+        input_ids = []
+        seen = set()
+        for x in iter_ndjson_ids(self.input_path, id_field=self.id_field):
+            mid = _to_int(x)
+            if mid is None or mid in seen:
+                continue
+            seen.add(mid)
+            input_ids.append(mid)
         if not input_ids:
             sys.stderr.write(f"[ERREUR] Aucun ID trouvé dans {self.input_path.name}\n")
             sys.exit(1)
@@ -145,8 +163,8 @@ class MovieWatchProvidersFetcher(TMDBFetcher):
                         obj = json.loads(line)
                     except Exception:
                         continue
-                    out_id = obj.get(self.id_field_output)
-                    if isinstance(out_id, int) and out_id in targets_set:
+                    out_id = _to_int(obj.get(self.id_field_output))
+                    if out_id is not None and out_id in targets_set:
                         continue
                     dst.write(line)
                     copied_existing += 1
@@ -179,9 +197,25 @@ class MovieWatchProvidersFetcher(TMDBFetcher):
                     self.progress.inc("processed")
 
                     if rows:
-                        payload = "".join(json.dumps(r, ensure_ascii=False, separators=(",", ":")) + "\n" for r in rows)
+                        payload = "".join(
+                            json.dumps(r, ensure_ascii=False, separators=(",", ":")) + "\n" for r in rows
+                        )
                         with write_lock:
                             out.write(payload)
+                        ok_movies += 1
+                        self.progress.set("ok", ok_movies)
+                        added_movies += 1
+                        self.progress.set("added", added_movies)
+                    else:
+                        # Aucune offre → écrire une ligne sentinelle pour marquer le film comme traité
+                        sentinel = {
+                            self.id_field_output: mid,
+                            "provider_id": None,
+                            "provider_name": None,
+                            "country_code": None
+                        }
+                        with write_lock:
+                            out.write(json.dumps(sentinel, ensure_ascii=False, separators=(",", ":")) + "\n")
                         ok_movies += 1
                         self.progress.set("ok", ok_movies)
                         added_movies += 1
@@ -212,7 +246,9 @@ class MovieWatchProvidersFetcher(TMDBFetcher):
         append_summary_log(self.log_path, date_str, added_movies, 0, total_lines, self.error_counter, self.entity_type)
 
         # 9) Fin
-        sys.stderr.write(f"\n[OK] NDJSON écrit : {self.output_path} | movies_added={added_movies} | kept_lines={copied_existing} | total_lines={total_lines}\n")
+        sys.stderr.write(
+            f"\n[OK] NDJSON écrit : {self.output_path} | movies_added={added_movies} | kept_lines={copied_existing} | total_lines={total_lines}\n"
+        )
 
 
 def main():

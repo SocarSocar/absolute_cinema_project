@@ -1,0 +1,63 @@
+services:
+  # Environnement de dev principal (tu te connectes dedans, tu lances scripts/tests/API)
+  app:
+    build: .
+    container_name: absolute_app
+    working_dir: /app
+    env_file: .env
+    volumes:
+      - ./:/app               # code monté en direct
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./state:/app/state
+    ports:
+      - "8000:8000"              # réservé pour FastAPI plus tard
+    command: tail -f /dev/null   # on garde le conteneur vivant pour exec/shell
+
+  # Raccourci "upload seul" — pratique pour tester sans lancer toute la stack
+  upload:
+    build: .
+    container_name: absolute_upload
+    working_dir: /app
+    env_file: .env
+    volumes:
+      - ./:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./state:/app/state
+    entrypoint: []
+    command: ["python","scripts/Load_Snowflake/upload_to_stage.py"] 
+    profiles: ["oneshot"]     # n’est pas lancé par défaut avec 'up'
+  full_update:
+    build: .
+    container_name: absolute_full_update
+    working_dir: /app
+    env_file: .env
+    volumes:
+      - ./:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./state:/app/state
+    entrypoint: []  # IMPORTANT: on neutralise l’entrypoint
+    command:
+      - /bin/bash
+      - -lc
+      - |
+        set -euo pipefail
+        python scripts/fetch_TMDB_API/run_all_scripts.py
+        python scripts/Load_Snowflake/upload_to_stage.py
+    profiles: ["oneshot"]    
+
+# Services Airflow et FastAPI seront ajoutés ensuite.
+# Exemple d’ajout futur :
+#  api:
+#    build: .
+#    env_file: .env
+#    volumes:
+#      - ./:/app
+#    command: uvicorn src.api:app --host 0.0.0.0 --port 8000
+#    ports:
+#      - "8000:8000"
+#    depends_on:
+#      - app
+#    profiles: ["api"]

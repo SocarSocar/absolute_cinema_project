@@ -9,6 +9,8 @@ from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 import snowflake.connector
 
+from datetime import date, datetime
+
 API_VERSION = "v1"
 DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
@@ -37,7 +39,7 @@ SCHEMA_GOLD = (
 SNOW_ROLE = os.getenv("SNOWFLAKE_ROLE")  # optionnel
 
 # Table mapping — ajuste ici si vos noms diffèrent
-T = {
+TABLES = {
     "CONTENT": "FCT_CONTENT",
     "GENRE": "DIM_GENRE",
     "BR_CONTENT_GENRE": "BRIDGE_CONTENT_GENRE",
@@ -50,13 +52,13 @@ T = {
     "DATE": "DIM_DATE",
     "FINANCE": "FACT_REVENUE_BUDGET",
     "WATCH_PROVIDER": "DIM_WATCH_PROVIDER",
-    "BR_CONTENT_PROVIDER": "BRIDGE_CONTENT_PROVIDER",
+    "BR_CONTENT_PROVIDER": "BRIDGE_CONTENT_PROVIDER_MARKET",
     "MOVIE_FEATURES": "GLD_FACT_MOVIE_ML_NUMERIC",  # pour /features
 }
 
 def Q(name: str) -> str:
     """Retourne le nom pleinement qualifié DB.SCHEMA.TABLE"""
-    return f'{SNOW_DATABASE}.{SCHEMA_GOLD}.{T[name]}'
+    return f'{SNOW_DATABASE}.{SCHEMA_GOLD}.{TABLES[name]}'
 
 # --------- Connexion / exécution ----------
 def get_conn():
@@ -134,7 +136,7 @@ class Review(BaseModel):
     rating: Optional[float] = None
     title: Optional[str] = None
     content: Optional[str] = None
-    date_id: Optional[int] = None
+    date_id: Optional[Any] = None  # peut être int/date/datetime/str selon GOLD
 
 class Content(BaseModel):
     id_content: str
@@ -146,7 +148,7 @@ class Content(BaseModel):
     episode_id: Optional[int] = None
     title: Optional[str] = None
     original_language: Optional[str] = None
-    content_date: Optional[str] = None
+    content_date: Optional[date] = None   # <= ICI: était Optional[str]
     popularity: Optional[float] = None
     vote_average: Optional[float] = None
     vote_count: Optional[int] = None
@@ -158,14 +160,24 @@ class Content(BaseModel):
     providers: Optional[List[Provider]] = None
     cast: Optional[List[Credit]] = None
 
+
 class PageMeta(BaseModel):
     limit: int
     offset: int
     returned: int
 
-class Page[T](BaseModel):
+# Pages concrètes (évite les génériques Pydantic v2 pour l’OpenAPI)
+class ContentPage(BaseModel):
     meta: PageMeta
-    items: List[T]
+    items: List[Content]
+
+class ReviewPage(BaseModel):
+    meta: PageMeta
+    items: List[Review]
+
+class DictPage(BaseModel):
+    meta: PageMeta
+    items: List[Dict[str, Any]]
 
 # --------- App ----------
 logging.basicConfig(level=logging.INFO)
@@ -193,14 +205,34 @@ def fetch_companies(id_content: str) -> List[Company]:
     return [Company(**r) for r in run_query(sql, (id_content,))]
 
 def fetch_providers(id_content: str) -> List[Provider]:
+    # Colonnes réelles fréquentes: BRIDGE: watch_provider_id / DIM: watch_provider_id, name, provider_type
     sql = f"""
-        SELECT wp.provider_id, wp.name, wp.type
+        SELECT
+            wp.watch_provider_id AS provider_id,
+            wp.name AS name,
+            wp.provider_type AS type
         FROM {Q('BR_CONTENT_PROVIDER')} bp
-        JOIN {Q('WATCH_PROVIDER')} wp USING(provider_id)
+        JOIN {Q('WATCH_PROVIDER')} wp
+          ON wp.watch_provider_id = bp.watch_provider_id
         WHERE bp.id_content = %s
         ORDER BY wp.name
     """
-    return [Provider(**r) for r in run_query(sql, (id_content,))]
+    try:
+        return [Provider(**r) for r in run_query(sql, (id_content,))]
+    except Exception as e:
+        # Fallback: certaines implémentations utilisent 'type' au lieu de 'provider_type'
+        sql_alt = f"""
+            SELECT
+                wp.watch_provider_id AS provider_id,
+                wp.name AS name,
+                wp.type AS type
+            FROM {Q('BR_CONTENT_PROVIDER')} bp
+            JOIN {Q('WATCH_PROVIDER')} wp
+              ON wp.watch_provider_id = bp.watch_provider_id
+            WHERE bp.id_content = %s
+            ORDER BY wp.name
+        """
+        return [Provider(**r) for r in run_query(sql_alt, (id_content,))]
 
 def fetch_cast(id_content: str, limit: int = 20) -> List[Credit]:
     sql = f"""
@@ -214,7 +246,7 @@ def fetch_cast(id_content: str, limit: int = 20) -> List[Credit]:
     return [Credit(**r) for r in run_query(sql, (id_content, limit))]
 
 # --------- Endpoints: CONTENT ----------
-@app.get(f"/{API_VERSION}/content/by-title", response_model=Page[Content])
+@app.get(f"/{API_VERSION}/content/by-title", response_model=ContentPage)
 def content_by_title(
     q: str = Query(..., min_length=1),
     content_type: Optional[str] = Query(None, pattern="^(movie|series)$"),
@@ -241,7 +273,7 @@ def content_by_title(
     params.extend([limit, offset])
     rows = run_query(sql, tuple(params))
     items = [Content(**r) for r in rows]
-    return Page[Content](meta=PageMeta(limit=limit, offset=offset, returned=len(items)), items=items)
+    return ContentPage(meta=PageMeta(limit=limit, offset=offset, returned=len(items)), items=items)
 
 @app.get(f"/{API_VERSION}/content/{{id_content}}", response_model=Content)
 def content_detail(id_content: str):
@@ -255,14 +287,32 @@ def content_detail(id_content: str):
     """
     base = run_query_one(sql, (id_content,))
     c = Content(**base)
-    c.genres = fetch_genres(id_content)
-    c.companies = fetch_companies(id_content)
-    c.providers = fetch_providers(id_content)
-    c.cast = fetch_cast(id_content, 20)
+
+    # Enrichissements tolérants: ne jamais casser la route si une jointure échoue
+    try:
+        c.genres = fetch_genres(id_content)
+    except Exception:
+        c.genres = []
+
+    try:
+        c.companies = fetch_companies(id_content)
+    except Exception:
+        c.companies = []
+
+    try:
+        c.providers = fetch_providers(id_content)
+    except Exception:
+        c.providers = []
+
+    try:
+        c.cast = fetch_cast(id_content, 20)
+    except Exception:
+        c.cast = []
+
     return c
 
 # --------- Endpoints: REVIEWS / FINANCE / PROVIDERS ----------
-@app.get(f"/{API_VERSION}/content/{{id_content}}/reviews", response_model=Page[Review])
+@app.get(f"/{API_VERSION}/content/{{id_content}}/reviews", response_model=ReviewPage)
 def content_reviews(
     id_content: str,
     limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
@@ -270,16 +320,59 @@ def content_reviews(
 ):
     limit = clamp_limit(limit)
     offset = clamp_offset(offset)
-    sql = f"""
+
+    # Variantes de schéma courantes pour FACT_REVIEW
+    selects = [
+        # v1: colonnes "simples"
+        f"""
         SELECT review_id, author, source, language, rating, title, content, date_id
         FROM {Q('REVIEW')}
         WHERE id_content = %s
         ORDER BY date_id DESC
         LIMIT %s OFFSET %s
-    """
-    rows = run_query(sql, (id_content, limit, offset))
-    items = [Review(**r) for r in rows]
-    return Page[Review](meta=PageMeta(limit=limit, offset=offset, returned=len(items)), items=items)
+        """,
+        # v2: source renommé en review_source
+        f"""
+        SELECT review_id, author, review_source AS source, language, rating, title, content, date_id
+        FROM {Q('REVIEW')}
+        WHERE id_content = %s
+        ORDER BY date_id DESC
+        LIMIT %s OFFSET %s
+        """,
+        # v3: source = site ; titre/texte préfixés
+        f"""
+        SELECT review_id, author, site AS source, language, rating, review_title AS title, review_text AS content, date_id
+        FROM {Q('REVIEW')}
+        WHERE id_content = %s
+        ORDER BY date_id DESC
+        LIMIT %s OFFSET %s
+        """,
+        # v4: variations lang/score/date
+        f"""
+        SELECT review_id, author, site AS source, lang AS language, score AS rating, review_title AS title, review_text AS content, review_date AS date_id
+        FROM {Q('REVIEW')}
+        WHERE id_content = %s
+        ORDER BY review_date DESC
+        LIMIT %s OFFSET %s
+        """,
+    ]
+
+    last_err = None
+    for sql in selects:
+        try:
+            rows = run_query(sql, (id_content, limit, offset))
+            items = [Review(**r) for r in rows]
+            return ReviewPage(
+                meta=PageMeta(limit=limit, offset=offset, returned=len(items)),
+                items=items,
+            )
+        except Exception as e:
+            last_err = e
+            continue
+
+    # Si toutes les variantes échouent, on renvoie une 500 explicite avec le message Snowflake
+    raise HTTPException(status_code=500, detail=f"FACT_REVIEW schema mismatch: {last_err}")
+
 
 @app.get(f"/{API_VERSION}/content/{{id_content}}/finance", response_model=Finance)
 def content_finance(id_content: str):
@@ -315,7 +408,7 @@ def movie_features(movie_id: int):
     return row[0]
 
 # --------- Endpoints: PERSON ----------
-@app.get(f"/{API_VERSION}/person/by-name", response_model=Page[Dict[str, Any]])
+@app.get(f"/{API_VERSION}/person/by-name", response_model=DictPage)
 def person_by_name(
     q: str = Query(..., min_length=1),
     limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
@@ -341,10 +434,7 @@ def person_by_name(
         LIMIT %s OFFSET %s
     """
     rows = run_query(sql, (f"%{q}%", f"%{q}%", limit, offset))
-    return Page[Dict[str, Any]](
-        meta=PageMeta(limit=limit, offset=offset, returned=len(rows)),
-        items=rows,
-    )
+    return DictPage(meta=PageMeta(limit=limit, offset=offset, returned=len(rows)), items=rows)
 
 @app.get(f"/{API_VERSION}/person/{{person_id}}", response_model=Dict[str, Any])
 def person_detail(person_id: int):

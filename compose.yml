@@ -6,13 +6,13 @@ services:
     working_dir: /app
     env_file: .env
     volumes:
-      - ./:/app               # code monté en direct
+      - ./:/app
       - ./data:/app/data
       - ./logs:/app/logs
       - ./state:/app/state
     ports:
-      - "8000:8000"              # réservé pour FastAPI plus tard
-    command: tail -f /dev/null   # on garde le conteneur vivant pour exec/shell
+      - "8000:8000"
+    command: uvicorn app.api:app --host 0.0.0.0 --port 8000 --reload
 
   # Raccourci "upload seul" — pratique pour tester sans lancer toute la stack
   upload:

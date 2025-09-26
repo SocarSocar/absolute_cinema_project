@@ -4,19 +4,86 @@ from __future__ import annotations
 import os
 import logging
 from typing import Any, Dict, List, Optional, Tuple
+from datetime import date, datetime
 
 from fastapi import FastAPI, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import snowflake.connector
 
-from datetime import date, datetime
+
+# ===========================
+# API METADATA / OPENAPI DOCS
+# ===========================
 
 API_VERSION = "v1"
 DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
 
-# --------- Config (depuis .env injecté par compose) ----------
+TAGS_METADATA = [
+    {
+        "name": "content",
+        "description": (
+            "Endpoints centrés sur les œuvres (films/séries/saisons/épisodes). "
+            "Incluent recherche par titre, fiche détaillée, reviews, finance et providers."
+        ),
+    },
+    {
+        "name": "person",
+        "description": (
+            "Endpoints centrés sur les personnes (acteurs, réalisateurs, etc.). "
+            "Incluent recherche par nom et fiche détaillée avec filmographie."
+        ),
+    },
+    {
+        "name": "features",
+        "description": (
+            "Accès brut aux colonnes numériques normalisées liées aux films "
+            "pour exploitation analytique. "
+            "Aucune logique ML ici : simple exposition des *features*."
+        ),
+    },
+    {
+        "name": "stats",
+        "description": (
+            "Statistiques agrégées prêtes à l’emploi (ex: agrégations par genre)."
+        ),
+    },
+]
+
+APP_DESCRIPTION = """
+API de lecture **directe** sur Snowflake (couche GOLD).  
+Aucun import local. **Toutes** les requêtes exécutent du SQL côté Snowflake et renvoient du JSON propre.
+
+### Principes d’usage
+- **Filtrage & pagination** systématiques quand utile (`limit`/`offset`).
+- **Paramétrage SQL** sécurisé (binds `%s`, pas de concaténation de valeurs).
+- **Schéma GOLD** détecté automatiquement via variables d’environnement.
+
+### Schéma attendu (extraits)
+- Pivot: `FCT_CONTENT`  
+- Genres: `BRIDGE_CONTENT_GENRE` + `DIM_GENRE`  
+- Comptes/Studios: `BRIDGE_CONTENT_COMPANY` + `DIM_COMPANY`  
+- Providers: `BRIDGE_CONTENT_PROVIDER_MARKET` + `DIM_WATCH_PROVIDER`  
+- Cast/Crew: `FACT_CREDIT` + `DIM_PERSON` (+ `DIM_PERSON_ALIAS`)  
+- Reviews: `FACT_REVIEW`  
+- Finance: `FACT_REVENUE_BUDGET`  
+- Features numériques: `GLD_FACT_MOVIE_ML_NUMERIC`
+
+### Authentification
+Aucune. L’API sert uniquement l’interrogation lecture.
+
+### Limites
+- `limit` borné à {MAX_LIMIT}.
+- Les agrégations sont volontairement simples pour garder les latences faibles.
+""".replace("{MAX_LIMIT}", str(MAX_LIMIT))
+
+
+# ===============
+# CONFIG ENV VARS
+# ===============
+
 def _getenv(name: str, default: Optional[str] = None, required: bool = False) -> str:
+    """Lecture stricte des variables d’environnement. Lève si `required=True` et vide."""
     val = os.getenv(name, default)
     if required and not val:
         raise RuntimeError(f"Missing required env var: {name}")
@@ -25,20 +92,19 @@ def _getenv(name: str, default: Optional[str] = None, required: bool = False) ->
 SNOW_USER = _getenv("SNOWFLAKE_USER", required=True)
 SNOW_PASSWORD = _getenv("SNOWFLAKE_PASSWORD", required=True)
 SNOW_ACCOUNT = _getenv("SNOWFLAKE_ACCOUNT", required=True)
-SNOW_WAREHOUSE = _getenv("SNOWFLAKE_WAREHOUSE", required=True)
+SNOW_WAREHOUSE = _getenv("SNOWFLAKE_WAREHOUSE_API", required=True)
 SNOW_DATABASE = _getenv("SNOWFLAKE_DATABASE", required=True)
 
-# Schéma GOLD résolu prudemment: priorité à *_SCHEMA_GOLD, sinon *_SCHEMA_ML, sinon *_SCHEMA, sinon "GOLD"
+# Résolution prudente du schéma GOLD
 SCHEMA_GOLD = (
     os.getenv("SNOWFLAKE_SCHEMA_GOLD")
     or os.getenv("SNOWFLAKE_SCHEMA_ML")
     or os.getenv("SNOWFLAKE_SCHEMA")
     or "GOLD"
 )
+SNOW_ROLE = os.getenv("SNOWFLAKE_ROLE")
 
-SNOW_ROLE = os.getenv("SNOWFLAKE_ROLE")  # optionnel
-
-# Table mapping — ajuste ici si vos noms diffèrent
+# Mapping des tables (adapter ici si vos noms diffèrent)
 TABLES = {
     "CONTENT": "FCT_CONTENT",
     "GENRE": "DIM_GENRE",
@@ -52,16 +118,24 @@ TABLES = {
     "DATE": "DIM_DATE",
     "FINANCE": "FACT_REVENUE_BUDGET",
     "WATCH_PROVIDER": "DIM_WATCH_PROVIDER",
-    "BR_CONTENT_PROVIDER": "BRIDGE_CONTENT_PROVIDER_MARKET",
-    "MOVIE_FEATURES": "GLD_FACT_MOVIE_ML_NUMERIC",  # pour /features
+    "BR_CONTENT_PROVIDER": "BRIDGE_CONTENT_PROVIDER_MARKET",  # + country_code
+    "MOVIE_FEATURES": "GLD_FACT_MOVIE_ML_NUMERIC",
 }
 
 def Q(name: str) -> str:
-    """Retourne le nom pleinement qualifié DB.SCHEMA.TABLE"""
+    """Nom pleinement qualifié DB.SCHEMA.TABLE pour Snowflake."""
     return f'{SNOW_DATABASE}.{SCHEMA_GOLD}.{TABLES[name]}'
 
-# --------- Connexion / exécution ----------
+
+# ============================
+# CONNEXION / EXÉCUTION SQL
+# ============================
+
 def get_conn():
+    """
+    Ouvre une connexion Snowflake avec le warehouse / database / schema définis.
+    Fermeture automatique via context manager.
+    """
     kwargs = dict(
         user=SNOW_USER,
         password=SNOW_PASSWORD,
@@ -75,6 +149,10 @@ def get_conn():
     return snowflake.connector.connect(**kwargs)
 
 def run_query(sql: str, params: Tuple[Any, ...] = ()) -> List[Dict[str, Any]]:
+    """
+    Exécute une requête **SELECT** paramétrée et renvoie une liste de dicts (snake_case).
+    Utilise `cursor.description` pour récupérer les noms de colonnes.
+    """
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(sql, params)
@@ -85,88 +163,92 @@ def run_query(sql: str, params: Tuple[Any, ...] = ()) -> List[Dict[str, Any]]:
     return [dict(zip(cols, r)) for r in rows]
 
 def run_query_one(sql: str, params: Tuple[Any, ...]) -> Dict[str, Any]:
+    """
+    Exécute une requête **SELECT** et renvoie **un seul** enregistrement. 404 si vide.
+    """
     out = run_query(sql, params)
     if not out:
         raise HTTPException(status_code=404, detail="Not found")
     return out[0]
 
 def clamp_limit(limit: Optional[int]) -> int:
+    """Borne `limit` entre 1 et `MAX_LIMIT`, défaut `DEFAULT_LIMIT`."""
     if limit is None:
         return DEFAULT_LIMIT
     return max(1, min(MAX_LIMIT, int(limit)))
 
 def clamp_offset(offset: Optional[int]) -> int:
+    """Borne `offset` à min 0, défaut 0."""
     if offset is None:
         return 0
     return max(0, int(offset))
 
-# --------- Modèles (simples) ----------
+
+# =====================
+# Pydantic: SCHEMAS DOC
+# =====================
+
 class Genre(BaseModel):
-    genre_id: Optional[int] = None
-    name: Optional[str] = None
+    genre_id: Optional[int] = Field(None, description="Identifiant genre")
+    name: Optional[str] = Field(None, description="Libellé du genre")
 
 class Company(BaseModel):
-    company_id: Optional[int] = None
-    name: Optional[str] = None
-    origin_country: Optional[str] = None
-    headquarters: Optional[str] = None
+    company_id: Optional[int] = Field(None, description="Identifiant société")
+    name: Optional[str] = Field(None, description="Nom")
+    origin_country: Optional[str] = Field(None, description="Pays d’origine (code ISO)")
+    headquarters: Optional[str] = Field(None, description="Siège social")
 
 class Provider(BaseModel):
-    provider_id: Optional[int] = None
-    name: Optional[str] = None
-    type: Optional[str] = None
+    provider_id: Optional[int] = Field(None, description="Identifiant provider")
+    provider_name: Optional[str] = Field(None, description="Nom commercial du provider")
+    country_code: Optional[str] = Field(None, description="Code pays marché (ex: FR, US)")
 
 class Credit(BaseModel):
-    person_id: Optional[int] = None
-    name: Optional[str] = None
-    job: Optional[str] = None
-    character: Optional[str] = None
-    order: Optional[int] = None
+    person_id: Optional[int] = Field(None, description="Identifiant personne")
+    name: Optional[str] = Field(None, description="Nom de la personne")
+    department: Optional[str] = Field(None, description="Département (ex: Acting, Directing)")
+    job: Optional[str] = Field(None, description="Métier (ex: Director, Writer)")
+    character: Optional[str] = Field(None, description="Nom du personnage (pour Acting)")
+    order_idx: Optional[int] = Field(None, description="Ordre d’affichage du casting")
 
 class Finance(BaseModel):
-    budget: Optional[float] = None
-    revenue: Optional[float] = None
-    currency: Optional[str] = None
+    budget: Optional[float] = Field(None, description="Budget estimé")
+    revenue: Optional[float] = Field(None, description="Revenue estimé")
 
 class Review(BaseModel):
-    review_id: Optional[int] = None
-    author: Optional[str] = None
-    source: Optional[str] = None
-    language: Optional[str] = None
-    rating: Optional[float] = None
-    title: Optional[str] = None
-    content: Optional[str] = None
-    date_id: Optional[Any] = None  # peut être int/date/datetime/str selon GOLD
+    review_id: Optional[str] = Field(None, description="Identifiant review (chaîne)")
+    author: Optional[str] = Field(None, description="Auteur de la review")
+    content: Optional[str] = Field(None, description="Texte brut de la review")
+    created_at: Optional[datetime] = Field(None, description="Horodatage création")
+    url: Optional[str] = Field(None, description="URL source publique")
 
 class Content(BaseModel):
-    id_content: str
-    content_type: Optional[str] = None
-    native_id: Optional[int] = None
-    movie_id: Optional[int] = None
-    series_id: Optional[int] = None
-    season_id: Optional[int] = None
-    episode_id: Optional[int] = None
-    title: Optional[str] = None
-    original_language: Optional[str] = None
-    content_date: Optional[date] = None   # <= ICI: était Optional[str]
-    popularity: Optional[float] = None
-    vote_average: Optional[float] = None
-    vote_count: Optional[int] = None
-    runtime: Optional[int] = None
-    number_of_seasons: Optional[int] = None
-    number_of_episodes: Optional[int] = None
-    genres: Optional[List[Genre]] = None
-    companies: Optional[List[Company]] = None
-    providers: Optional[List[Provider]] = None
-    cast: Optional[List[Credit]] = None
-
+    id_content: str = Field(..., description="Clé pivot interne (ex: `60059_serie`)")
+    content_type: Optional[str] = Field(None, description="movie|series|season|episode")
+    native_id: Optional[int] = Field(None, description="ID natif source (TMDB, etc.)")
+    movie_id: Optional[int] = Field(None, description="ID film (si applicable)")
+    series_id: Optional[int] = Field(None, description="ID série (si applicable)")
+    season_id: Optional[int] = Field(None, description="ID saison (si applicable)")
+    episode_id: Optional[int] = Field(None, description="ID épisode (si applicable)")
+    title: Optional[str] = Field(None, description="Titre principal")
+    original_language: Optional[str] = Field(None, description="Langue originale (code)")
+    content_date: Optional[date] = Field(None, description="Date de sortie/diffusion")
+    popularity: Optional[float] = Field(None, description="Score popularité")
+    vote_average: Optional[float] = Field(None, description="Moyenne votes")
+    vote_count: Optional[int] = Field(None, description="Volume votes")
+    runtime: Optional[int] = Field(None, description="Durée (min) si pertinent")
+    number_of_seasons: Optional[int] = Field(None, description="Nb saisons si série")
+    number_of_episodes: Optional[int] = Field(None, description="Nb épisodes si série")
+    genres: Optional[List[Genre]] = Field(None, description="Liste des genres")
+    companies: Optional[List[Company]] = Field(None, description="Liste des sociétés liées")
+    providers: Optional[List[Provider]] = Field(None, description="Liste des providers dispos")
+    cast: Optional[List[Credit]] = Field(None, description="Liste casting/crew principaux")
 
 class PageMeta(BaseModel):
-    limit: int
-    offset: int
-    returned: int
+    limit: int = Field(..., description="Taille page retournée")
+    offset: int = Field(..., description="Décalage de début")
+    returned: int = Field(..., description="Nombre d’items renvoyés")
 
-# Pages concrètes (évite les génériques Pydantic v2 pour l’OpenAPI)
 class ContentPage(BaseModel):
     meta: PageMeta
     items: List[Content]
@@ -179,12 +261,39 @@ class DictPage(BaseModel):
     meta: PageMeta
     items: List[Dict[str, Any]]
 
-# --------- App ----------
-logging.basicConfig(level=logging.INFO)
-app = FastAPI(title="Absolute Cinema API", version=API_VERSION)
 
-# --------- Helpers d’enrichissement ----------
+# ==========
+# APP INIT
+# ==========
+
+logging.basicConfig(level=logging.INFO)
+
+app = FastAPI(
+    title="Absolute Cinema API",
+    version=API_VERSION,
+    summary="API de lecture Snowflake (GOLD) pour contenus, personnes, reviews, finance, providers, features et stats.",
+    description=APP_DESCRIPTION,
+    contact={
+        "name": "Absolute Cinema",
+    },
+    license_info={"name": "Propriétaire"},
+    openapi_tags=TAGS_METADATA,
+)
+
+
+# ============================
+# HELPERS ENRICHISSEMENTS DOC
+# ============================
+
 def fetch_genres(id_content: str) -> List[Genre]:
+    """
+    Genres associés à un `id_content`.
+
+    Requêtes:
+      - `BRIDGE_CONTENT_GENRE` → `DIM_GENRE`
+
+    Ordre: alphabétique par nom de genre.
+    """
     sql = f"""
         SELECT g.genre_id, g.name
         FROM {Q('BR_CONTENT_GENRE')} bg
@@ -195,6 +304,14 @@ def fetch_genres(id_content: str) -> List[Genre]:
     return [Genre(**r) for r in run_query(sql, (id_content,))]
 
 def fetch_companies(id_content: str) -> List[Company]:
+    """
+    Sociétés associées à un `id_content`.
+
+    Requêtes:
+      - `BRIDGE_CONTENT_COMPANY` → `DIM_COMPANY`
+
+    Ordre: alphabétique.
+    """
     sql = f"""
         SELECT c.company_id, c.name, c.origin_country, c.headquarters
         FROM {Q('BR_CONTENT_COMPANY')} bc
@@ -205,58 +322,122 @@ def fetch_companies(id_content: str) -> List[Company]:
     return [Company(**r) for r in run_query(sql, (id_content,))]
 
 def fetch_providers(id_content: str) -> List[Provider]:
-    # Colonnes réelles fréquentes: BRIDGE: watch_provider_id / DIM: watch_provider_id, name, provider_type
+    """
+    Providers disponibles pour un `id_content` par marché (country_code).
+
+    Requêtes:
+      - `BRIDGE_CONTENT_PROVIDER_MARKET` → `DIM_WATCH_PROVIDER`
+
+    Ordre: alphabétique par `provider_name`.
+    """
     sql = f"""
         SELECT
-            wp.watch_provider_id AS provider_id,
-            wp.name AS name,
-            wp.provider_type AS type
+            wp.provider_id,
+            wp.provider_name,
+            bp.country_code
         FROM {Q('BR_CONTENT_PROVIDER')} bp
-        JOIN {Q('WATCH_PROVIDER')} wp
-          ON wp.watch_provider_id = bp.watch_provider_id
+        JOIN {Q('WATCH_PROVIDER')} wp USING(provider_id)
         WHERE bp.id_content = %s
-        ORDER BY wp.name
+        ORDER BY wp.provider_name
     """
-    try:
-        return [Provider(**r) for r in run_query(sql, (id_content,))]
-    except Exception as e:
-        # Fallback: certaines implémentations utilisent 'type' au lieu de 'provider_type'
-        sql_alt = f"""
-            SELECT
-                wp.watch_provider_id AS provider_id,
-                wp.name AS name,
-                wp.type AS type
-            FROM {Q('BR_CONTENT_PROVIDER')} bp
-            JOIN {Q('WATCH_PROVIDER')} wp
-              ON wp.watch_provider_id = bp.watch_provider_id
-            WHERE bp.id_content = %s
-            ORDER BY wp.name
-        """
-        return [Provider(**r) for r in run_query(sql_alt, (id_content,))]
+    return [Provider(**r) for r in run_query(sql, (id_content,))]
 
 def fetch_cast(id_content: str, limit: int = 20) -> List[Credit]:
+    """
+    Casting/équipe principale d’un `id_content`.
+
+    Requêtes:
+      - `FACT_CREDIT` → `DIM_PERSON`
+
+    Ordonne par `order_idx` croissant (nulls en fin).
+    """
     sql = f"""
-        SELECT fc.person_id, p.name, fc.job, fc.character, fc."order"
+        SELECT
+            fc.person_id,
+            p.name,
+            fc.department,
+            fc.job,
+            fc.character,
+            fc.order_idx
         FROM {Q('CREDIT')} fc
         JOIN {Q('PERSON')} p USING(person_id)
         WHERE fc.id_content = %s
-        ORDER BY fc."order" ASC NULLS LAST
+        ORDER BY COALESCE(fc.order_idx, 999999)
         LIMIT %s
     """
     return [Credit(**r) for r in run_query(sql, (id_content, limit))]
 
-# --------- Endpoints: CONTENT ----------
-@app.get(f"/{API_VERSION}/content/by-title", response_model=ContentPage)
+
+# =========================
+# ENDPOINTS: CONTENT
+# =========================
+
+@app.get(
+    f"/{API_VERSION}/content/by-title",
+    response_model=ContentPage,
+    tags=["content"],
+    summary="Recherche de contenus par titre",
+    description=(
+        "Recherche *full-text* simple sur `title` avec filtre optionnel `content_type` "
+        "(`movie|series|season|episode`). Retour paginé et trié par popularité décroissante."
+    ),
+    responses={
+        200: {
+            "description": "Liste paginée de contenus.",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "meta": {"limit": 5, "offset": 0, "returned": 2},
+                        "items": [
+                            {
+                                "id_content": "603_movie",
+                                "content_type": "movie",
+                                "title": "The Matrix",
+                                "original_language": "en",
+                                "content_date": "1999-03-31",
+                                "popularity": 120.5,
+                                "vote_average": 8.2,
+                                "vote_count": 21000,
+                            },
+                            {
+                                "id_content": "604_movie",
+                                "content_type": "movie",
+                                "title": "The Matrix Reloaded",
+                                "original_language": "en",
+                                "content_date": "2003-05-15",
+                                "popularity": 85.2,
+                                "vote_average": 7.0,
+                                "vote_count": 15000,
+                            },
+                        ],
+                    }
+                }
+            },
+        }
+    },
+)
 def content_by_title(
-    q: str = Query(..., min_length=1),
-    content_type: Optional[str] = Query(None, pattern="^(movie|series)$"),
-    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
-    offset: int = Query(0, ge=0),
+    content_name: str = Query(
+        ...,
+        min_length=1,
+        description="Sous-chaîne insensible à la casse recherchée dans `title`.",
+        examples={"ex": {"summary": "Exemple", "value": "Matrix"}},
+    ),
+    content_type: Optional[str] = Query(
+        None,
+        pattern="^(movie|series|season|episode)$",
+        description="Filtre optionnel sur le type de contenu.",
+    ),
+    limit: int = Query(
+        DEFAULT_LIMIT, ge=1, le=MAX_LIMIT,
+        description=f"Nombre max d’items à renvoyer (≤ {MAX_LIMIT})."
+    ),
+    offset: int = Query(0, ge=0, description="Décalage de départ des résultats."),
 ):
     limit = clamp_limit(limit)
     offset = clamp_offset(offset)
     clauses = ["title ILIKE %s"]
-    params: List[Any] = [f"%{q}%"]
+    params: List[Any] = [f"%{content_name}%"]
     if content_type:
         clauses.append("content_type = %s")
         params.append(content_type)
@@ -275,7 +456,21 @@ def content_by_title(
     items = [Content(**r) for r in rows]
     return ContentPage(meta=PageMeta(limit=limit, offset=offset, returned=len(items)), items=items)
 
-@app.get(f"/{API_VERSION}/content/{{id_content}}", response_model=Content)
+
+@app.get(
+    f"/{API_VERSION}/content/{{id_content}}",
+    response_model=Content,
+    tags=["content"],
+    summary="Fiche détaillée d’un contenu",
+    description=(
+        "Retourne la fiche pivot enrichie (genres, sociétés, providers, cast) "
+        "à partir de `id_content`."
+    ),
+    responses={
+        200: {"description": "Objet `Content` enrichi."},
+        404: {"description": "`id_content` introuvable."},
+    },
+)
 def content_detail(id_content: str):
     sql = f"""
         SELECT id_content, content_type, native_id, movie_id, series_id, season_id, episode_id,
@@ -283,117 +478,107 @@ def content_detail(id_content: str):
                runtime, number_of_seasons, number_of_episodes
         FROM {Q('CONTENT')}
         WHERE id_content = %s
+        ORDER BY popularity DESC NULLS LAST
         LIMIT 1
     """
     base = run_query_one(sql, (id_content,))
     c = Content(**base)
-
-    # Enrichissements tolérants: ne jamais casser la route si une jointure échoue
-    try:
-        c.genres = fetch_genres(id_content)
-    except Exception:
-        c.genres = []
-
-    try:
-        c.companies = fetch_companies(id_content)
-    except Exception:
-        c.companies = []
-
-    try:
-        c.providers = fetch_providers(id_content)
-    except Exception:
-        c.providers = []
-
-    try:
-        c.cast = fetch_cast(id_content, 20)
-    except Exception:
-        c.cast = []
-
+    try: c.genres = fetch_genres(id_content)
+    except Exception: c.genres = []
+    try: c.companies = fetch_companies(id_content)
+    except Exception: c.companies = []
+    try: c.providers = fetch_providers(id_content)
+    except Exception: c.providers = []
+    try: c.cast = fetch_cast(id_content, 20)
+    except Exception: c.cast = []
     return c
 
-# --------- Endpoints: REVIEWS / FINANCE / PROVIDERS ----------
-@app.get(f"/{API_VERSION}/content/{{id_content}}/reviews", response_model=ReviewPage)
+
+# ===============================
+# ENDPOINTS: REVIEWS / FINANCE / PROVIDERS
+# ===============================
+
+@app.get(
+    f"/{API_VERSION}/content/{{id_content}}/reviews",
+    response_model=ReviewPage,
+    tags=["content"],
+    summary="Reviews d’un contenu",
+    description="Liste paginée des reviews attachées à `id_content`, triées par `created_at` décroissant.",
+    responses={200: {"description": "Page de reviews."}},
+)
 def content_reviews(
     id_content: str,
-    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
-    offset: int = Query(0, ge=0),
+    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT, description="Taille page."),
+    offset: int = Query(0, ge=0, description="Décalage."),
 ):
     limit = clamp_limit(limit)
     offset = clamp_offset(offset)
-
-    # Variantes de schéma courantes pour FACT_REVIEW
-    selects = [
-        # v1: colonnes "simples"
-        f"""
-        SELECT review_id, author, source, language, rating, title, content, date_id
+    sql = f"""
+        SELECT review_id, author, content, created_at, url
         FROM {Q('REVIEW')}
         WHERE id_content = %s
-        ORDER BY date_id DESC
+        ORDER BY created_at DESC NULLS LAST
         LIMIT %s OFFSET %s
-        """,
-        # v2: source renommé en review_source
-        f"""
-        SELECT review_id, author, review_source AS source, language, rating, title, content, date_id
-        FROM {Q('REVIEW')}
-        WHERE id_content = %s
-        ORDER BY date_id DESC
-        LIMIT %s OFFSET %s
-        """,
-        # v3: source = site ; titre/texte préfixés
-        f"""
-        SELECT review_id, author, site AS source, language, rating, review_title AS title, review_text AS content, date_id
-        FROM {Q('REVIEW')}
-        WHERE id_content = %s
-        ORDER BY date_id DESC
-        LIMIT %s OFFSET %s
-        """,
-        # v4: variations lang/score/date
-        f"""
-        SELECT review_id, author, site AS source, lang AS language, score AS rating, review_title AS title, review_text AS content, review_date AS date_id
-        FROM {Q('REVIEW')}
-        WHERE id_content = %s
-        ORDER BY review_date DESC
-        LIMIT %s OFFSET %s
-        """,
-    ]
-
-    last_err = None
-    for sql in selects:
-        try:
-            rows = run_query(sql, (id_content, limit, offset))
-            items = [Review(**r) for r in rows]
-            return ReviewPage(
-                meta=PageMeta(limit=limit, offset=offset, returned=len(items)),
-                items=items,
-            )
-        except Exception as e:
-            last_err = e
-            continue
-
-    # Si toutes les variantes échouent, on renvoie une 500 explicite avec le message Snowflake
-    raise HTTPException(status_code=500, detail=f"FACT_REVIEW schema mismatch: {last_err}")
+    """
+    rows = run_query(sql, (id_content, limit, offset))
+    items = [Review(**r) for r in rows]
+    return ReviewPage(meta=PageMeta(limit=limit, offset=offset, returned=len(items)), items=items)
 
 
-@app.get(f"/{API_VERSION}/content/{{id_content}}/finance", response_model=Finance)
+@app.get(
+    f"/{API_VERSION}/content/{{id_content}}/finance",
+    response_model=Finance,
+    tags=["content"],
+    summary="Budget/Revenue d’un contenu",
+    description="Retourne budget et revenue agrégés attachés à `id_content` si disponibles.",
+    responses={200: {"description": "Objet `Finance` (vide si non trouvé)."}},
+)
 def content_finance(id_content: str):
     sql = f"""
-        SELECT budget, revenue, currency
+        SELECT budget, revenue
         FROM {Q('FINANCE')}
         WHERE id_content = %s
-        ORDER BY /* au cas où */ 1
+        ORDER BY 1
         LIMIT 1
     """
     row = run_query(sql, (id_content,))
     if not row:
-        return Finance()  # vide si pas de finance
+        return Finance()
     return Finance(**row[0])
 
-@app.get(f"/{API_VERSION}/content/{{id_content}}/providers", response_model=List[Provider])
+
+@app.get(
+    f"/{API_VERSION}/content/{{id_content}}/providers",
+    response_model=List[Provider],
+    tags=["content"],
+    summary="Providers par marché d’un contenu",
+    description="Liste des providers disponibles pour `id_content`, avec `country_code`.",
+    responses={200: {"description": "Liste de providers."}},
+)
 def content_providers(id_content: str):
     return fetch_providers(id_content)
 
-# --------- Endpoints: FEATURES (ex-ML num) ----------
-@app.get(f"/{API_VERSION}/content/{{movie_id}}/features")
+
+# ===============================
+# ENDPOINTS: FEATURES (NUMÉRIQUES)
+# ===============================
+
+@app.get(
+    f"/{API_VERSION}/content/{{movie_id}}/features",
+    tags=["features"],
+    summary="Features numériques associées à un film",
+    description=(
+        "Retour brut d’une ligne de features numériques normalisées pour `movie_id` "
+        "(table `GLD_FACT_MOVIE_ML_NUMERIC`). Pas de transformation supplémentaire."
+    ),
+    responses={
+        200: {
+            "description": "Dict colonnes → valeurs numériques.",
+            "content": {"application/json": {"example": {"movie_id": 603, "feat_pop_norm": 0.81, "feat_vote_norm": 0.92}}},
+        },
+        404: {"description": "Aucune feature trouvée pour `movie_id`."},
+    },
+)
 def movie_features(movie_id: int):
     sql = f"""
         SELECT *
@@ -404,19 +589,36 @@ def movie_features(movie_id: int):
     row = run_query(sql, (movie_id,))
     if not row:
         raise HTTPException(status_code=404, detail="Features not found")
-    # Retour brut: dict colonnes -> valeurs numériques
     return row[0]
 
-# --------- Endpoints: PERSON ----------
-@app.get(f"/{API_VERSION}/person/by-name", response_model=DictPage)
+
+# =========================
+# ENDPOINTS: PERSON
+# =========================
+
+@app.get(
+    f"/{API_VERSION}/person/by-name",
+    response_model=DictPage,
+    tags=["person"],
+    summary="Recherche personnes par nom (avec alias)",
+    description=(
+        "Recherche insensible à la casse sur `DIM_PERSON.name` et `DIM_PERSON_ALIAS.aka`. "
+        "Retour distinct des personnes matchées."
+    ),
+    responses={200: {"description": "Liste paginée de personnes (id, name)."}},
+)
 def person_by_name(
-    q: str = Query(..., min_length=1),
-    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
-    offset: int = Query(0, ge=0),
+    q: str = Query(
+        ...,
+        min_length=1,
+        description="Sous-chaîne recherchée sur nom et alias.",
+        examples={"ex": {"summary": "Exemple", "value": "keanu"}},
+    ),
+    limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT, description="Taille page."),
+    offset: int = Query(0, ge=0, description="Décalage."),
 ):
     limit = clamp_limit(limit)
     offset = clamp_offset(offset)
-    # Match sur nom et alias
     sql = f"""
         WITH matches AS (
             SELECT p.person_id, p.name
@@ -426,7 +628,7 @@ def person_by_name(
             SELECT p.person_id, p.name
             FROM {Q('PERSON_ALIAS')} a
             JOIN {Q('PERSON')} p USING(person_id)
-            WHERE a.alias ILIKE %s
+            WHERE a.aka ILIKE %s
         )
         SELECT DISTINCT person_id, name
         FROM matches
@@ -436,7 +638,21 @@ def person_by_name(
     rows = run_query(sql, (f"%{q}%", f"%{q}%", limit, offset))
     return DictPage(meta=PageMeta(limit=limit, offset=offset, returned=len(rows)), items=rows)
 
-@app.get(f"/{API_VERSION}/person/{{person_id}}", response_model=Dict[str, Any])
+
+@app.get(
+    f"/{API_VERSION}/person/{{person_id}}",
+    response_model=Dict[str, Any],
+    tags=["person"],
+    summary="Fiche détaillée personne + crédits",
+    description=(
+        "Retourne l’en-tête personne et l’ensemble des crédits reliés "
+        "(jointure `FACT_CREDIT` ↔ `FCT_CONTENT`). Tri: popularité contenu, puis `order_idx`."
+    ),
+    responses={
+        200: {"description": "Détail personne + crédits."},
+        404: {"description": "`person_id` introuvable."},
+    },
+)
 def person_detail(person_id: int):
     base = run_query_one(
         f"SELECT person_id, name FROM {Q('PERSON')} WHERE person_id = %s LIMIT 1",
@@ -444,51 +660,77 @@ def person_detail(person_id: int):
     )
     credits = run_query(
         f"""
-        SELECT fc.id_content, fc.job, fc.character, fc."order",
-               c.title, c.content_type, c.popularity, c.vote_average, c.vote_count, c.content_date
+        SELECT
+            fc.id_content,
+            fc.department,
+            fc.job,
+            fc.character,
+            fc.order_idx,
+            c.title,
+            c.content_type,
+            c.popularity,
+            c.vote_average,
+            c.vote_count,
+            c.content_date
         FROM {Q('CREDIT')} fc
         JOIN {Q('CONTENT')} c USING(id_content)
         WHERE fc.person_id = %s
-        ORDER BY c.popularity DESC NULLS LAST, fc."order" ASC NULLS LAST
+        ORDER BY c.popularity DESC NULLS LAST, COALESCE(fc.order_idx, 999999)
         """,
         (person_id,),
     )
     base["credits"] = credits
     return base
 
-# --------- Endpoints: STATS ----------
-@app.get(f"/{API_VERSION}/stats/genre", response_model=List[Dict[str, Any]])
+
+# =========================
+# ENDPOINTS: STATS
+# =========================
+
+@app.get(
+    f"/{API_VERSION}/stats/genre",
+    response_model=List[Dict[str, Any]],
+    tags=["stats"],
+    summary="Agrégations par genre",
+    description=(
+        "Renvoie, par genre, les moyennes `vote_average` et `popularity`, et un volume de contenus. "
+        "Tri par nom de genre. Utilise `FCT_CONTENT` ↔ `BRIDGE_CONTENT_GENRE` ↔ `DIM_GENRE`."
+    ),
+    responses={
+        200: {
+            "description": "Liste d’objets agrégés par genre.",
+            "content": {
+                "application/json": {
+                    "example": [
+                        {"genre_id": 28, "name": "Action", "vote_average": 6.8, "popularity": 45.2, "content_volume": 12034},
+                        {"genre_id": 18, "name": "Drama", "vote_average": 6.9, "popularity": 37.1, "content_volume": 15402},
+                    ]
+                }
+            },
+        }
+    },
+)
 def stats_genre(
-    metric: str = Query("vote_average", pattern="^(vote_average|popularity)$"),
-    top: int = Query(20, ge=1, le=200),
+    metric: str = Query(
+        "vote_average",
+        pattern="^(vote_average|popularity)$",
+        description="Indicateur de référence. Conservé pour compatibilité, non utilisé dans l’ordre de tri actuel.",
+    ),
+    top: int = Query(20, ge=1, le=200, description="Limite haute de lignes renvoyées."),
 ):
-    if metric == "vote_average":
-        sql = f"""
-            SELECT g.genre_id, g.name,
-                   AVG(c.vote_average) AS vote_average,
-                   AVG(c.popularity)  AS popularity,
-                   COUNT(*) AS n
-            FROM {Q('CONTENT')} c
-            JOIN {Q('BR_CONTENT_GENRE')} bg ON bg.id_content = c.id_content
-            JOIN {Q('GENRE')} g ON g.genre_id = bg.genre_id
-            GROUP BY 1,2
-            HAVING COUNT(*) > 0
-            ORDER BY vote_average DESC NULLS LAST
-            LIMIT %s
-        """
-        return run_query(sql, (top,))
-    else:
-        sql = f"""
-            SELECT g.genre_id, g.name,
-                   AVG(c.vote_average) AS vote_average,
-                   AVG(c.popularity)  AS popularity,
-                   COUNT(*) AS n
-            FROM {Q('CONTENT')} c
-            JOIN {Q('BR_CONTENT_GENRE')} bg ON bg.id_content = c.id_content
-            JOIN {Q('GENRE')} g ON g.genre_id = bg.genre_id
-            GROUP BY 1,2
-            HAVING COUNT(*) > 0
-            ORDER BY popularity DESC NULLS LAST
-            LIMIT %s
-        """
-        return run_query(sql, (top,))
+    sql = f"""
+        SELECT
+            g.genre_id,
+            MIN(g.name)                                        AS name,
+            AVG(TRY_TO_DOUBLE(c.vote_average))                 AS vote_average,
+            AVG(TRY_TO_DOUBLE(c.popularity))                   AS popularity,
+            COUNT(*)                                           AS content_volume
+        FROM {Q('CONTENT')} c
+        JOIN {Q('BR_CONTENT_GENRE')} bg ON bg.id_content = c.id_content
+        JOIN {Q('GENRE')} g            ON g.genre_id     = bg.genre_id
+        GROUP BY g.genre_id
+        HAVING COUNT(*) > 0
+        ORDER BY name ASC
+        LIMIT %s
+    """
+    return run_query(sql, (top,))

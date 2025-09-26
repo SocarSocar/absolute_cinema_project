@@ -90,6 +90,19 @@ def run_query_one(sql: str, params: Tuple[Any, ...]) -> Dict[str, Any]:
         raise HTTPException(status_code=404, detail="Not found")
     return out[0]
 
+def list_columns(table_name: str) -> List[str]:
+    sql = """
+        SELECT LOWER(column_name) AS column_name
+        FROM information_schema.columns
+        WHERE table_catalog = %s
+          AND table_schema  = %s
+          AND table_name    = %s
+        ORDER BY ordinal_position
+    """
+    rows = run_query(sql, (SNOW_DATABASE, SCHEMA_GOLD, table_name))
+    return [r["column_name"] for r in rows]
+
+
 def clamp_limit(limit: Optional[int]) -> int:
     if limit is None:
         return DEFAULT_LIMIT
@@ -136,7 +149,7 @@ class Review(BaseModel):
     rating: Optional[float] = None
     title: Optional[str] = None
     content: Optional[str] = None
-    date_id: Optional[Any] = None  # peut être int/date/datetime/str selon GOLD
+    date_id: Optional[Any] = None
 
 class Content(BaseModel):
     id_content: str
@@ -321,57 +334,50 @@ def content_reviews(
     limit = clamp_limit(limit)
     offset = clamp_offset(offset)
 
-    # Variantes de schéma courantes pour FACT_REVIEW
-    selects = [
-        # v1: colonnes "simples"
-        f"""
-        SELECT review_id, author, source, language, rating, title, content, date_id
-        FROM {Q('REVIEW')}
-        WHERE id_content = %s
-        ORDER BY date_id DESC
-        LIMIT %s OFFSET %s
-        """,
-        # v2: source renommé en review_source
-        f"""
-        SELECT review_id, author, review_source AS source, language, rating, title, content, date_id
-        FROM {Q('REVIEW')}
-        WHERE id_content = %s
-        ORDER BY date_id DESC
-        LIMIT %s OFFSET %s
-        """,
-        # v3: source = site ; titre/texte préfixés
-        f"""
-        SELECT review_id, author, site AS source, language, rating, review_title AS title, review_text AS content, date_id
-        FROM {Q('REVIEW')}
-        WHERE id_content = %s
-        ORDER BY date_id DESC
-        LIMIT %s OFFSET %s
-        """,
-        # v4: variations lang/score/date
-        f"""
-        SELECT review_id, author, site AS source, lang AS language, score AS rating, review_title AS title, review_text AS content, review_date AS date_id
-        FROM {Q('REVIEW')}
-        WHERE id_content = %s
-        ORDER BY review_date DESC
-        LIMIT %s OFFSET %s
-        """,
-    ]
+    cols = set(list_columns(TABLES["REVIEW"]))
 
-    last_err = None
-    for sql in selects:
-        try:
-            rows = run_query(sql, (id_content, limit, offset))
-            items = [Review(**r) for r in rows]
-            return ReviewPage(
-                meta=PageMeta(limit=limit, offset=offset, returned=len(items)),
-                items=items,
-            )
-        except Exception as e:
-            last_err = e
-            continue
+    # clé de filtre possible
+    filter_key = "id_content" if "id_content" in cols else ("content_id" if "content_id" in cols else None)
+    if not filter_key:
+        raise HTTPException(status_code=500, detail="FACT_REVIEW: no id_content/content_id column found")
 
-    # Si toutes les variantes échouent, on renvoie une 500 explicite avec le message Snowflake
-    raise HTTPException(status_code=500, detail=f"FACT_REVIEW schema mismatch: {last_err}")
+    # mapping cible -> candidates par ordre de préférence
+    want = {
+        "review_id": ["review_id", "id", "rid"],
+        "author": ["author", "author_name", "username", "user"],
+        "source": ["source", "site", "provider", "platform", "origin", "source_name"],
+        "language": ["language", "lang", "locale", "iso_639_1"],
+        "rating": ["rating", "score", "rating_value", "vote", "vote_value"],
+        "title": ["title", "review_title", "headline", "summary"],
+        "content": ["content", "review_text", "text", "body", "comment"],
+        "date_id": ["date_id", "review_date", "created_at", "dt", "date", "timestamp"],
+    }
+
+    # construit la liste SELECT avec alias sûrs; NULL si absent
+    select_parts = []
+    for alias, candidates in want.items():
+        chosen = next((c for c in candidates if c in cols), None)
+        if chosen:
+            select_parts.append(f'{chosen} AS {alias}')
+        else:
+            select_parts.append(f'NULL AS {alias}')
+
+    # colonne de tri la plus pertinente dispo
+    order_candidates = ["date_id", "review_date", "created_at", "timestamp", "dt", "id", "review_id"]
+    order_col = next((c for c in order_candidates if c in cols), None)
+    order_sql = f"ORDER BY {order_col} DESC" if order_col else ""
+
+    sql = f"""
+        SELECT {", ".join(select_parts)}
+        FROM {Q('REVIEW')}
+        WHERE {filter_key} = %s
+        {order_sql}
+        LIMIT %s OFFSET %s
+    """
+
+    rows = run_query(sql, (id_content, limit, offset))
+    items = [Review(**r) for r in rows]
+    return ReviewPage(meta=PageMeta(limit=limit, offset=offset, returned=len(items)), items=items)
 
 
 @app.get(f"/{API_VERSION}/content/{{id_content}}/finance", response_model=Finance)

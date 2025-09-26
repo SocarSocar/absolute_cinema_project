@@ -25,7 +25,6 @@ EXECUTION_ORDER = [
     "Movies_ReleaseDates.py",
     "Movies_Reviews.py",
     "Movies_Translations.py",
-    "Movies_WatchProviders.py",
     "TVSeason_details.py",
     "TVEpisode_details.py",
     "TVSeries_Content.py",
@@ -40,7 +39,6 @@ EXECUTION_ORDER = [
     "Configuration_countries.py",
     "Network_details.py",
     "People_details.py",
-    "TV_watch_providers.py",
     "Certifications_series.py",
 ]
 

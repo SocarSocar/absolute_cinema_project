@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+pandas
+scikit-learn
+joblib
+snowflake-connector-python
+python-dotenv

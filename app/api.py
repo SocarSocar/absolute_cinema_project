@@ -734,3 +734,104 @@ def stats_genre(
         LIMIT %s
     """
     return run_query(sql, (top,))
+
+# ... tout ton fichier api.py précédent inchangé ...
+
+# =========================
+# ENDPOINTS: PREDICTION ML
+# =========================
+
+from pathlib import Path
+import joblib
+import pandas as pd
+
+# Dossier du modèle (adapter chemin si nécessaire)
+MODEL_DIR = Path(__file__).resolve().parent
+
+try:
+    model = joblib.load(MODEL_DIR / "saved_model.pkl")
+    imputer = joblib.load(MODEL_DIR / "imputer.pkl")
+    feature_names = joblib.load(MODEL_DIR / "features.pkl")
+except Exception:
+    # Tolérance: si les fichiers manquent, les endpoints lèveront une 500
+    model = imputer = feature_names = None
+
+
+class MovieFeatures(BaseModel):
+    """Schéma d’entrée attendu pour la prédiction ML (toutes features obligatoires)."""
+
+    BUDGET: float = Field(..., description="Budget du film")
+    NB_GENRES: int = Field(..., description="Nombre de genres associés")
+    NB_PROVIDERS: int = Field(..., description="Nombre de providers disponibles")
+    POPULARITY: float = Field(..., description="Score de popularité")
+    RELEASE_YEAR: int = Field(..., description="Année de sortie (YYYY)")
+    REVENUE: float = Field(..., description="Revenu total")
+    RUNTIME: float = Field(..., description="Durée du film en minutes")
+    VOTE_COUNT: int = Field(..., description="Nombre de votes enregistrés")
+
+
+@app.post(
+    f"/{API_VERSION}/predict",
+    tags=["features"],
+    summary="Prédiction via modèle ML sauvegardé",
+    description=(
+        "Endpoint de scoring basé sur un modèle sklearn sauvegardé. "
+        "Nécessite en entrée toutes les features numériques définies. "
+        "Pipeline: DataFrame → imputation → réordonnancement colonnes → prédiction."
+    ),
+    responses={
+        200: {
+            "description": "Prédiction + probabilités associées.",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "prediction": 1,
+                        "probabilities": {"class_0": 0.12, "class_1": 0.88},
+                    }
+                }
+            },
+        },
+        500: {"description": "Modèle/objets ML introuvables ou erreur de prédiction."},
+    },
+)
+def predict(movie: MovieFeatures):
+    if model is None or imputer is None or feature_names is None:
+        raise HTTPException(status_code=500, detail="ML model not loaded")
+
+    # Conversion dict → DataFrame
+    df = pd.DataFrame([movie.dict()])
+
+    # Réordonner les colonnes selon le modèle sauvegardé
+    try:
+        df = df[feature_names]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Invalid feature order: {e}")
+
+    # Imputation des valeurs manquantes
+    try:
+        X_imputed = imputer.transform(df)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Imputer failed: {e}")
+
+    # Prédiction finale
+    try:
+        prediction = int(model.predict(X_imputed)[0])
+        proba = model.predict_proba(X_imputed)[0].tolist()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
+
+    return {
+        "prediction": prediction,
+        "probabilities": {"class_0": proba[0], "class_1": proba[1]},
+    }
+
+
+@app.get(
+    f"/{API_VERSION}/health",
+    tags=["stats"],
+    summary="État de santé de l’API",
+    description="Renvoie `status=ok` si l’API est up. Simple healthcheck (pas de dépendance à Snowflake ou ML).",
+    responses={200: {"description": "API vivante et accessible."}},
+)
+def health():
+    return {"status": "ok"}

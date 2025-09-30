@@ -1,0 +1,19 @@
+OSError while attempting to symlink the latest log directory
+  ____________       _____________
+ ____    |__( )_________  __/__  /________      __
+____  /| |_  /__  ___/_  /_ __  /_  __ \_ | /| / /
+___  ___ |  / _  /   _  __/ _  / / /_/ /_ |/ |/ /
+ _/_/  |_/_/  /_/    /_/    /_/  \____/____/|__/
+[[34m2025-09-30T15:31:59.341+0200[0m] {[34mtask_context_logger.py:[0m63} INFO[0m - Task context logging is enabled[0m
+[[34m2025-09-30T15:31:59.343+0200[0m] {[34mexecutor_loader.py:[0m235} INFO[0m - Loaded executor: SequentialExecutor[0m
+[2025-09-30 15:31:59 +0200] [19639] [INFO] Starting gunicorn 22.0.0
+[2025-09-30 15:31:59 +0200] [19639] [INFO] Listening at: http://[::]:8793 (19639)
+[2025-09-30 15:31:59 +0200] [19639] [INFO] Using worker: sync
+[2025-09-30 15:31:59 +0200] [19640] [INFO] Booting worker with pid: 19640
+[[34m2025-09-30T15:31:59.383+0200[0m] {[34mscheduler_job_runner.py:[0m799} INFO[0m - Starting the scheduler[0m
+[[34m2025-09-30T15:31:59.384+0200[0m] {[34mscheduler_job_runner.py:[0m806} INFO[0m - Processing each file at most -1 times[0m
+[[34m2025-09-30T15:31:59.389+0200[0m] {[34mmanager.py:[0m170} INFO[0m - Launched DagFileProcessorManager with pid: 19641[0m
+[[34m2025-09-30T15:31:59.390+0200[0m] {[34mscheduler_job_runner.py:[0m1598} INFO[0m - Adopting or resetting orphaned tasks for active dag runs[0m
+[[34m2025-09-30T15:31:59.395+0200[0m] {[34msettings.py:[0m60} INFO[0m - Configured default timezone UTC[0m
+[2025-09-30T15:31:59.410+0200] {manager.py:393} WARNING - Because we cannot use more than 1 thread (parsing_processes = 2) when using sqlite. So we set parallelism to 1.
+[2025-09-30 15:31:59 +0200] [19642] [INFO] Booting worker with pid: 19642

@@ -1,58 +1,328 @@
-/home/socar/.venvs/airflow/lib/python3.12/site-packages/flask_limiter/extension.py:333 UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
-/home/socar/.venvs/airflow/lib/python3.12/site-packages/airflow/providers/fab/auth_manager/fab_auth_manager.py:498 FutureWarning: section/key [webserver/update_fab_perms] has been deprecated, you should use[fab/update_fab_perms] instead. Please update your `conf.get*` call to use the new name
-[2025-09-30 15:32:00 +0200] [19638] [INFO] Starting gunicorn 22.0.0
-[2025-09-30 15:32:00 +0200] [19638] [INFO] Listening at: http://0.0.0.0:8080 (19638)
-[2025-09-30 15:32:00 +0200] [19638] [INFO] Using worker: sync
-[2025-09-30 15:32:00 +0200] [19665] [INFO] Booting worker with pid: 19665
-[2025-09-30 15:32:00 +0200] [19666] [INFO] Booting worker with pid: 19666
-[2025-09-30 15:32:01 +0200] [19667] [INFO] Booting worker with pid: 19667
-[2025-09-30 15:32:01 +0200] [19668] [INFO] Booting worker with pid: 19668
-127.0.0.1 - - [30/Sep/2025:15:33:18 +0200] "GET / HTTP/1.1" 302 197 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:19 +0200] "GET /home HTTP/1.1" 200 421205 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:19 +0200] "GET /static/appbuilder/css/bootstrap.min.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:19 +0200] "GET /static/appbuilder/css/fontawesome/solid.min.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:19 +0200] "GET /static/appbuilder/css/fontawesome/fontawesome.min.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:19 +0200] "GET /static/appbuilder/css/bootstrap-datepicker/bootstrap-datepicker3.min.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:19 +0200] "GET /static/appbuilder/css/fontawesome/v4-shims.min.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:19 +0200] "GET /static/appbuilder/css/fontawesome/brands.min.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:19 +0200] "GET /static/appbuilder/css/fontawesome/regular.min.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:19 +0200] "GET /static/appbuilder/css/select2/select2.min.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:19 +0200] "GET /static/appbuilder/css/select2/select2-bootstrap.min.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:19 +0200] "GET /static/appbuilder/css/flags/flags16.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:19 +0200] "GET /static/appbuilder/css/ab.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:19 +0200] "GET /static/dist/airflowDefaultTheme.c93fb34380b84747e945.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:19 +0200] "GET /static/dist/materialIcons.ce0f77d10d4dc51f5f07.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:20 +0200] "GET /static/dist/main.6f9728400381098372e3.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:20 +0200] "GET /static/dist/loadingDots.84963375c34df3f17aab.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:20 +0200] "GET /static/dist/bootstrap-datetimepicker.min.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:20 +0200] "GET /static/dist/switch.dc36fb509ef65ad7f478.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:20 +0200] "GET /static/dist/dags.9e8536f34b3ae1c26e39.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:20 +0200] "GET /static/dist/flash.39f43f5a4fffad4cd720.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:20 +0200] "GET /static/appbuilder/js/jquery-latest.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:20 +0200] "GET /static/appbuilder/js/ab_filters.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:20 +0200] "GET /static/appbuilder/js/ab_actions.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:20 +0200] "GET /static/appbuilder/js/bootstrap.min.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:20 +0200] "GET /static/appbuilder/js/bootstrap-datepicker/bootstrap-datepicker.min.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:20 +0200] "GET /static/appbuilder/js/select2/select2.min.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:21 +0200] "GET /static/appbuilder/js/ab.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:21 +0200] "GET /static/dist/bootstrap3-typeahead.min.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:21 +0200] "GET /static/dist/bootstrap-datetimepicker.min.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:22 +0200] "GET /static/dist/d3.min.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:22 +0200] "GET /static/dist/moment.0fcb6b41ff6a87cf079e.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:22 +0200] "GET /static/dist/main.6f9728400381098372e3.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:22 +0200] "GET /static/dist/dags.9e8536f34b3ae1c26e39.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:23 +0200] "POST /last_dagruns HTTP/1.1" 200 260 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:23 +0200] "POST /dag_stats HTTP/1.1" 200 9136 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:23 +0200] "POST /task_stats HTTP/1.1" 200 29211 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:23 +0200] "POST /blocked HTTP/1.1" 200 77 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:28 +0200] "GET /dags/daily_full_update/grid HTTP/1.1" 200 8887 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:28 +0200] "GET /static/dist/grid.05a588255b79e1b42825.js HTTP/1.1" 200 0 "http://localhost:8080/dags/daily_full_update/grid" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:28 +0200] "GET /static/dist/dag.90eacf5e3528c642ef15.js HTTP/1.1" 200 0 "http://localhost:8080/dags/daily_full_update/grid" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:29 +0200] "GET /object/grid_data?dag_id=daily_full_update&num_runs=25 HTTP/1.1" 200 2605 "http://localhost:8080/dags/daily_full_update/grid" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:29 +0200] "GET /object/next_run_datasets/daily_full_update HTTP/1.1" 200 39 "http://localhost:8080/dags/daily_full_update/grid" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:29 +0200] "GET /api/v1/dags/daily_full_update HTTP/1.1" 200 1212 "http://localhost:8080/dags/daily_full_update/grid" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:29 +0200] "GET /api/v1/dags/daily_full_update/details HTTP/1.1" 200 1596 "http://localhost:8080/dags/daily_full_update/grid" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:35 +0200] "GET /object/graph_data?dag_id=daily_full_update HTTP/1.1" 200 274 "http://localhost:8080/dags/daily_full_update/grid?tab=graph" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:36 +0200] "GET /api/v1/datasets?dag_ids=daily_full_update HTTP/1.1" 200 44 "http://localhost:8080/dags/daily_full_update/grid?tab=graph" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:44 +0200] "GET /object/grid_data?dag_id=daily_full_update&num_runs=25 HTTP/1.1" 200 2605 "http://localhost:8080/dags/daily_full_update/grid?tab=graph&dag_run_id=manual__2025-09-29T17%3A16%3A44%2B00%3A00&task_id=snowflake_light_checks" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
-127.0.0.1 - - [30/Sep/2025:15:33:54 +0200] "GET /api/v1/dags/daily_full_update/dagRuns/manual__2025-09-29T17:16:44+00:00/taskInstances/snowflake_light_checks/xcomEntries HTTP/1.1" 200 47 "http://localhost:8080/dags/daily_full_update/grid?tab=xcom&dag_run_id=manual__2025-09-29T17%3A16%3A44%2B00%3A00&task_id=snowflake_light_checks" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0"
+/home/nicolas/.venvs/airflow/lib/python3.12/site-packages/flask_limiter/extension.py:333 UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
+[[34m2025-09-30T16:12:41.419+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can create on DAG Runs[0m
+[[34m2025-09-30T16:12:41.426+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on DAG Runs to role Admin[0m
+[[34m2025-09-30T16:12:41.434+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on DAG Runs[0m
+[[34m2025-09-30T16:12:41.440+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Runs to role Admin[0m
+[[34m2025-09-30T16:12:41.446+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can edit on DAG Runs[0m
+[[34m2025-09-30T16:12:41.453+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on DAG Runs to role Admin[0m
+[[34m2025-09-30T16:12:41.460+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can delete on DAG Runs[0m
+[[34m2025-09-30T16:12:41.465+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on DAG Runs to role Admin[0m
+[[34m2025-09-30T16:12:41.471+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on DAG Runs[0m
+[[34m2025-09-30T16:12:41.477+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on DAG Runs to role Admin[0m
+[[34m2025-09-30T16:12:41.492+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Browse[0m
+[[34m2025-09-30T16:12:41.500+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Browse to role Admin[0m
+[[34m2025-09-30T16:12:41.525+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Jobs[0m
+[[34m2025-09-30T16:12:41.533+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Jobs to role Admin[0m
+[[34m2025-09-30T16:12:41.543+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Jobs[0m
+[[34m2025-09-30T16:12:41.556+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Jobs to role Admin[0m
+[[34m2025-09-30T16:12:41.585+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Audit Logs[0m
+[[34m2025-09-30T16:12:41.591+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Audit Logs to role Admin[0m
+[[34m2025-09-30T16:12:41.597+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Audit Logs[0m
+[[34m2025-09-30T16:12:41.603+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Audit Logs to role Admin[0m
+[[34m2025-09-30T16:12:41.633+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can create on Variables[0m
+[[34m2025-09-30T16:12:41.643+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on Variables to role Admin[0m
+[[34m2025-09-30T16:12:41.649+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Variables[0m
+[[34m2025-09-30T16:12:41.655+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Variables to role Admin[0m
+[[34m2025-09-30T16:12:41.661+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can edit on Variables[0m
+[[34m2025-09-30T16:12:41.667+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on Variables to role Admin[0m
+[[34m2025-09-30T16:12:41.672+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can delete on Variables[0m
+[[34m2025-09-30T16:12:41.687+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on Variables to role Admin[0m
+[[34m2025-09-30T16:12:41.697+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Variables[0m
+[[34m2025-09-30T16:12:41.706+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Variables to role Admin[0m
+[[34m2025-09-30T16:12:41.720+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Admin[0m
+[[34m2025-09-30T16:12:41.726+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Admin to role Admin[0m
+[[34m2025-09-30T16:12:41.754+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can create on Task Instances[0m
+[[34m2025-09-30T16:12:41.763+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on Task Instances to role Admin[0m
+[[34m2025-09-30T16:12:41.770+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Task Instances[0m
+[[34m2025-09-30T16:12:41.782+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Task Instances to role Admin[0m
+[[34m2025-09-30T16:12:41.795+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can edit on Task Instances[0m
+[[34m2025-09-30T16:12:41.814+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on Task Instances to role Admin[0m
+[[34m2025-09-30T16:12:41.836+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can delete on Task Instances[0m
+[[34m2025-09-30T16:12:41.846+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on Task Instances to role Admin[0m
+[[34m2025-09-30T16:12:41.854+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Task Instances[0m
+[[34m2025-09-30T16:12:41.861+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Task Instances to role Admin[0m
+[[34m2025-09-30T16:12:41.888+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Task Reschedules[0m
+[[34m2025-09-30T16:12:41.895+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Task Reschedules to role Admin[0m
+[[34m2025-09-30T16:12:41.902+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Task Reschedules[0m
+[[34m2025-09-30T16:12:41.911+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Task Reschedules to role Admin[0m
+[[34m2025-09-30T16:12:41.941+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Triggers[0m
+[[34m2025-09-30T16:12:41.948+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Triggers to role Admin[0m
+[[34m2025-09-30T16:12:41.953+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Triggers[0m
+[[34m2025-09-30T16:12:41.959+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Triggers to role Admin[0m
+[[34m2025-09-30T16:12:41.976+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Configurations[0m
+[[34m2025-09-30T16:12:41.983+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Configurations to role Admin[0m
+[[34m2025-09-30T16:12:41.990+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Configurations[0m
+[[34m2025-09-30T16:12:41.996+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Configurations to role Admin[0m
+[[34m2025-09-30T16:12:42.024+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can create on Connections[0m
+[[34m2025-09-30T16:12:42.031+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on Connections to role Admin[0m
+[[34m2025-09-30T16:12:42.037+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Connections[0m
+[[34m2025-09-30T16:12:42.044+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Connections to role Admin[0m
+[[34m2025-09-30T16:12:42.050+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can edit on Connections[0m
+[[34m2025-09-30T16:12:42.056+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on Connections to role Admin[0m
+[[34m2025-09-30T16:12:42.063+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can delete on Connections[0m
+[[34m2025-09-30T16:12:42.070+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on Connections to role Admin[0m
+[[34m2025-09-30T16:12:42.076+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Connections[0m
+[[34m2025-09-30T16:12:42.082+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Connections to role Admin[0m
+[[34m2025-09-30T16:12:42.110+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on SLA Misses[0m
+[[34m2025-09-30T16:12:42.117+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on SLA Misses to role Admin[0m
+[[34m2025-09-30T16:12:42.125+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on SLA Misses[0m
+[[34m2025-09-30T16:12:42.131+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on SLA Misses to role Admin[0m
+[[34m2025-09-30T16:12:42.137+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can delete on SLA Misses[0m
+[[34m2025-09-30T16:12:42.144+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on SLA Misses to role Admin[0m
+[[34m2025-09-30T16:12:42.150+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can edit on SLA Misses[0m
+[[34m2025-09-30T16:12:42.156+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on SLA Misses to role Admin[0m
+[[34m2025-09-30T16:12:42.174+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Plugins[0m
+[[34m2025-09-30T16:12:42.180+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Plugins to role Admin[0m
+[[34m2025-09-30T16:12:42.186+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Plugins[0m
+[[34m2025-09-30T16:12:42.193+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Plugins to role Admin[0m
+[[34m2025-09-30T16:12:42.214+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Providers[0m
+[[34m2025-09-30T16:12:42.221+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Providers to role Admin[0m
+[[34m2025-09-30T16:12:42.227+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Providers[0m
+[[34m2025-09-30T16:12:42.234+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Providers to role Admin[0m
+[[34m2025-09-30T16:12:42.264+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can create on Pools[0m
+[[34m2025-09-30T16:12:42.271+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on Pools to role Admin[0m
+[[34m2025-09-30T16:12:42.276+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Pools[0m
+[[34m2025-09-30T16:12:42.282+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Pools to role Admin[0m
+[[34m2025-09-30T16:12:42.287+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can edit on Pools[0m
+[[34m2025-09-30T16:12:42.293+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on Pools to role Admin[0m
+[[34m2025-09-30T16:12:42.300+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can delete on Pools[0m
+[[34m2025-09-30T16:12:42.306+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on Pools to role Admin[0m
+[[34m2025-09-30T16:12:42.312+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Pools[0m
+[[34m2025-09-30T16:12:42.318+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Pools to role Admin[0m
+[[34m2025-09-30T16:12:42.346+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on XComs[0m
+[[34m2025-09-30T16:12:42.352+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on XComs to role Admin[0m
+[[34m2025-09-30T16:12:42.358+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can delete on XComs[0m
+[[34m2025-09-30T16:12:42.364+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on XComs to role Admin[0m
+[[34m2025-09-30T16:12:42.370+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on XComs[0m
+[[34m2025-09-30T16:12:42.376+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on XComs to role Admin[0m
+[[34m2025-09-30T16:12:42.398+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on DAG Dependencies[0m
+[[34m2025-09-30T16:12:42.405+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on DAG Dependencies to role Admin[0m
+[[34m2025-09-30T16:12:42.437+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on DAGs[0m
+[[34m2025-09-30T16:12:42.445+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on DAGs to role Admin[0m
+[[34m2025-09-30T16:12:42.457+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Cluster Activity[0m
+[[34m2025-09-30T16:12:42.464+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Cluster Activity to role Admin[0m
+[[34m2025-09-30T16:12:42.476+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Datasets[0m
+[[34m2025-09-30T16:12:42.483+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Datasets to role Admin[0m
+[[34m2025-09-30T16:12:42.496+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Documentation[0m
+[[34m2025-09-30T16:12:42.503+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Documentation to role Admin[0m
+[[34m2025-09-30T16:12:42.517+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: menu access on Docs[0m
+[[34m2025-09-30T16:12:42.526+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Docs to role Admin[0m
+/home/nicolas/.venvs/airflow/lib/python3.12/site-packages/airflow/providers/fab/auth_manager/fab_auth_manager.py:498 FutureWarning: section/key [webserver/update_fab_perms] has been deprecated, you should use[fab/update_fab_perms] instead. Please update your `conf.get*` call to use the new name
+[[34m2025-09-30T16:12:43.160+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can edit on DAGs[0m
+[[34m2025-09-30T16:12:43.167+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can delete on DAGs[0m
+[[34m2025-09-30T16:12:43.173+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on DAGs[0m
+[[34m2025-09-30T16:12:43.184+0200[0m] {[34moverride.py:[0m1454} INFO[0m - Inserted Role: Viewer[0m
+[[34m2025-09-30T16:12:43.190+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAGs to role Viewer[0m
+[[34m2025-09-30T16:12:43.197+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on DAG Dependencies[0m
+[[34m2025-09-30T16:12:43.201+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Dependencies to role Viewer[0m
+[[34m2025-09-30T16:12:43.211+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on DAG Code[0m
+[[34m2025-09-30T16:12:43.216+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Code to role Viewer[0m
+[[34m2025-09-30T16:12:43.220+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Runs to role Viewer[0m
+[[34m2025-09-30T16:12:43.226+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Datasets[0m
+[[34m2025-09-30T16:12:43.230+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Datasets to role Viewer[0m
+[[34m2025-09-30T16:12:43.236+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Cluster Activity[0m
+[[34m2025-09-30T16:12:43.241+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Cluster Activity to role Viewer[0m
+[[34m2025-09-30T16:12:43.246+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Pools to role Viewer[0m
+[[34m2025-09-30T16:12:43.255+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on ImportError[0m
+[[34m2025-09-30T16:12:43.260+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on ImportError to role Viewer[0m
+[[34m2025-09-30T16:12:43.269+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on DAG Warnings[0m
+[[34m2025-09-30T16:12:43.274+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Warnings to role Viewer[0m
+[[34m2025-09-30T16:12:43.279+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Jobs to role Viewer[0m
+[[34m2025-09-30T16:12:43.283+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on My Password to role Viewer[0m
+[[34m2025-09-30T16:12:43.288+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on My Password to role Viewer[0m
+[[34m2025-09-30T16:12:43.292+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on My Profile to role Viewer[0m
+[[34m2025-09-30T16:12:43.298+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on My Profile to role Viewer[0m
+[[34m2025-09-30T16:12:43.302+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on SLA Misses to role Viewer[0m
+[[34m2025-09-30T16:12:43.307+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Task Instances to role Viewer[0m
+[[34m2025-09-30T16:12:43.317+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Task Logs[0m
+[[34m2025-09-30T16:12:43.321+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Task Logs to role Viewer[0m
+[[34m2025-09-30T16:12:43.326+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on XComs to role Viewer[0m
+[[34m2025-09-30T16:12:43.335+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can read on Website[0m
+[[34m2025-09-30T16:12:43.340+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Website to role Viewer[0m
+[[34m2025-09-30T16:12:43.345+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Browse to role Viewer[0m
+[[34m2025-09-30T16:12:43.349+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on DAGs to role Viewer[0m
+[[34m2025-09-30T16:12:43.354+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on DAG Dependencies to role Viewer[0m
+[[34m2025-09-30T16:12:43.359+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on DAG Runs to role Viewer[0m
+[[34m2025-09-30T16:12:43.363+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Datasets to role Viewer[0m
+[[34m2025-09-30T16:12:43.368+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Cluster Activity to role Viewer[0m
+[[34m2025-09-30T16:12:43.373+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Documentation to role Viewer[0m
+[[34m2025-09-30T16:12:43.383+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Docs to role Viewer[0m
+[[34m2025-09-30T16:12:43.388+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Jobs to role Viewer[0m
+[[34m2025-09-30T16:12:43.393+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on SLA Misses to role Viewer[0m
+[[34m2025-09-30T16:12:43.398+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Task Instances to role Viewer[0m
+[[34m2025-09-30T16:12:43.403+0200[0m] {[34moverride.py:[0m1454} INFO[0m - Inserted Role: User[0m
+[[34m2025-09-30T16:12:43.408+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAGs to role User[0m
+[[34m2025-09-30T16:12:43.413+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Dependencies to role User[0m
+[[34m2025-09-30T16:12:43.420+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Code to role User[0m
+[[34m2025-09-30T16:12:43.425+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Runs to role User[0m
+[[34m2025-09-30T16:12:43.431+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Datasets to role User[0m
+[[34m2025-09-30T16:12:43.438+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Cluster Activity to role User[0m
+[[34m2025-09-30T16:12:43.444+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Pools to role User[0m
+[[34m2025-09-30T16:12:43.450+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on ImportError to role User[0m
+[[34m2025-09-30T16:12:43.457+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Warnings to role User[0m
+[[34m2025-09-30T16:12:43.464+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Jobs to role User[0m
+[[34m2025-09-30T16:12:43.469+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on My Password to role User[0m
+[[34m2025-09-30T16:12:43.475+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on My Password to role User[0m
+[[34m2025-09-30T16:12:43.481+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on My Profile to role User[0m
+[[34m2025-09-30T16:12:43.487+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on My Profile to role User[0m
+[[34m2025-09-30T16:12:43.492+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on SLA Misses to role User[0m
+[[34m2025-09-30T16:12:43.497+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Task Instances to role User[0m
+[[34m2025-09-30T16:12:43.506+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Task Logs to role User[0m
+[[34m2025-09-30T16:12:43.512+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on XComs to role User[0m
+[[34m2025-09-30T16:12:43.519+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Website to role User[0m
+[[34m2025-09-30T16:12:43.525+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Browse to role User[0m
+[[34m2025-09-30T16:12:43.531+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on DAGs to role User[0m
+[[34m2025-09-30T16:12:43.538+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on DAG Dependencies to role User[0m
+[[34m2025-09-30T16:12:43.545+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on DAG Runs to role User[0m
+[[34m2025-09-30T16:12:43.552+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Datasets to role User[0m
+[[34m2025-09-30T16:12:43.558+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Cluster Activity to role User[0m
+[[34m2025-09-30T16:12:43.564+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Documentation to role User[0m
+[[34m2025-09-30T16:12:43.572+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Docs to role User[0m
+[[34m2025-09-30T16:12:43.579+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Jobs to role User[0m
+[[34m2025-09-30T16:12:43.586+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on SLA Misses to role User[0m
+[[34m2025-09-30T16:12:43.592+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Task Instances to role User[0m
+[[34m2025-09-30T16:12:43.598+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on DAGs to role User[0m
+[[34m2025-09-30T16:12:43.605+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on DAGs to role User[0m
+[[34m2025-09-30T16:12:43.610+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on Task Instances to role User[0m
+[[34m2025-09-30T16:12:43.616+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on Task Instances to role User[0m
+[[34m2025-09-30T16:12:43.622+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on Task Instances to role User[0m
+[[34m2025-09-30T16:12:43.627+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on DAG Runs to role User[0m
+[[34m2025-09-30T16:12:43.632+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on DAG Runs to role User[0m
+[[34m2025-09-30T16:12:43.637+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on DAG Runs to role User[0m
+[[34m2025-09-30T16:12:43.644+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can create on Datasets[0m
+[[34m2025-09-30T16:12:43.650+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on Datasets to role User[0m
+[[34m2025-09-30T16:12:43.655+0200[0m] {[34moverride.py:[0m1454} INFO[0m - Inserted Role: Op[0m
+[[34m2025-09-30T16:12:43.661+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAGs to role Op[0m
+[[34m2025-09-30T16:12:43.669+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Dependencies to role Op[0m
+[[34m2025-09-30T16:12:43.678+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Code to role Op[0m
+[[34m2025-09-30T16:12:43.685+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Runs to role Op[0m
+[[34m2025-09-30T16:12:43.695+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Datasets to role Op[0m
+[[34m2025-09-30T16:12:43.704+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Cluster Activity to role Op[0m
+[[34m2025-09-30T16:12:43.713+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Pools to role Op[0m
+[[34m2025-09-30T16:12:43.722+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on ImportError to role Op[0m
+[[34m2025-09-30T16:12:43.731+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Warnings to role Op[0m
+[[34m2025-09-30T16:12:43.739+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Jobs to role Op[0m
+[[34m2025-09-30T16:12:43.745+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on My Password to role Op[0m
+[[34m2025-09-30T16:12:43.751+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on My Password to role Op[0m
+[[34m2025-09-30T16:12:43.758+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on My Profile to role Op[0m
+[[34m2025-09-30T16:12:43.763+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on My Profile to role Op[0m
+[[34m2025-09-30T16:12:43.768+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on SLA Misses to role Op[0m
+[[34m2025-09-30T16:12:43.773+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Task Instances to role Op[0m
+[[34m2025-09-30T16:12:43.780+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Task Logs to role Op[0m
+[[34m2025-09-30T16:12:43.784+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on XComs to role Op[0m
+[[34m2025-09-30T16:12:43.801+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Website to role Op[0m
+[[34m2025-09-30T16:12:43.808+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Browse to role Op[0m
+[[34m2025-09-30T16:12:43.813+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on DAGs to role Op[0m
+[[34m2025-09-30T16:12:43.818+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on DAG Dependencies to role Op[0m
+[[34m2025-09-30T16:12:43.825+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on DAG Runs to role Op[0m
+[[34m2025-09-30T16:12:43.830+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Datasets to role Op[0m
+[[34m2025-09-30T16:12:43.835+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Cluster Activity to role Op[0m
+[[34m2025-09-30T16:12:43.841+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Documentation to role Op[0m
+[[34m2025-09-30T16:12:43.846+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Docs to role Op[0m
+[[34m2025-09-30T16:12:43.852+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Jobs to role Op[0m
+[[34m2025-09-30T16:12:43.858+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on SLA Misses to role Op[0m
+[[34m2025-09-30T16:12:43.863+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Task Instances to role Op[0m
+[[34m2025-09-30T16:12:43.870+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on DAGs to role Op[0m
+[[34m2025-09-30T16:12:43.877+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on DAGs to role Op[0m
+[[34m2025-09-30T16:12:43.883+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on Task Instances to role Op[0m
+[[34m2025-09-30T16:12:43.889+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on Task Instances to role Op[0m
+[[34m2025-09-30T16:12:43.895+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on Task Instances to role Op[0m
+[[34m2025-09-30T16:12:43.901+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on DAG Runs to role Op[0m
+[[34m2025-09-30T16:12:43.908+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on DAG Runs to role Op[0m
+[[34m2025-09-30T16:12:43.915+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on DAG Runs to role Op[0m
+[[34m2025-09-30T16:12:43.922+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on Datasets to role Op[0m
+[[34m2025-09-30T16:12:43.928+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Configurations to role Op[0m
+[[34m2025-09-30T16:12:43.934+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Admin to role Op[0m
+[[34m2025-09-30T16:12:43.941+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Configurations to role Op[0m
+[[34m2025-09-30T16:12:43.947+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Connections to role Op[0m
+[[34m2025-09-30T16:12:43.953+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Pools to role Op[0m
+[[34m2025-09-30T16:12:43.960+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Plugins to role Op[0m
+[[34m2025-09-30T16:12:43.965+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Variables to role Op[0m
+[[34m2025-09-30T16:12:43.972+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on Providers to role Op[0m
+[[34m2025-09-30T16:12:43.979+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission menu access on XComs to role Op[0m
+[[34m2025-09-30T16:12:43.986+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on Connections to role Op[0m
+[[34m2025-09-30T16:12:43.994+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Connections to role Op[0m
+[[34m2025-09-30T16:12:44.000+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on Connections to role Op[0m
+[[34m2025-09-30T16:12:44.006+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on Connections to role Op[0m
+[[34m2025-09-30T16:12:44.012+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on Pools to role Op[0m
+[[34m2025-09-30T16:12:44.018+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on Pools to role Op[0m
+[[34m2025-09-30T16:12:44.023+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on Pools to role Op[0m
+[[34m2025-09-30T16:12:44.028+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Plugins to role Op[0m
+[[34m2025-09-30T16:12:44.033+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Providers to role Op[0m
+[[34m2025-09-30T16:12:44.039+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on Variables to role Op[0m
+[[34m2025-09-30T16:12:44.044+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Variables to role Op[0m
+[[34m2025-09-30T16:12:44.049+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on Variables to role Op[0m
+[[34m2025-09-30T16:12:44.056+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on Variables to role Op[0m
+[[34m2025-09-30T16:12:44.062+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on XComs to role Op[0m
+[[34m2025-09-30T16:12:44.069+0200[0m] {[34moverride.py:[0m1858} INFO[0m - Created Permission View: can delete on Datasets[0m
+[[34m2025-09-30T16:12:44.075+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on Datasets to role Op[0m
+[[34m2025-09-30T16:12:44.083+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAGs to role Admin[0m
+[[34m2025-09-30T16:12:44.092+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Dependencies to role Admin[0m
+[[34m2025-09-30T16:12:44.098+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Code to role Admin[0m
+[[34m2025-09-30T16:12:44.104+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Datasets to role Admin[0m
+[[34m2025-09-30T16:12:44.112+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Cluster Activity to role Admin[0m
+[[34m2025-09-30T16:12:44.119+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on ImportError to role Admin[0m
+[[34m2025-09-30T16:12:44.125+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on DAG Warnings to role Admin[0m
+[[34m2025-09-30T16:12:44.131+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Task Logs to role Admin[0m
+[[34m2025-09-30T16:12:44.136+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can read on Website to role Admin[0m
+[[34m2025-09-30T16:12:44.142+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can edit on DAGs to role Admin[0m
+[[34m2025-09-30T16:12:44.147+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on DAGs to role Admin[0m
+[[34m2025-09-30T16:12:44.154+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can create on Datasets to role Admin[0m
+[[34m2025-09-30T16:12:44.161+0200[0m] {[34moverride.py:[0m1909} INFO[0m - Added Permission can delete on Datasets to role Admin[0m
+[2025-09-30 16:12:44 +0200] [60297] [INFO] Starting gunicorn 22.0.0
+[2025-09-30 16:12:44 +0200] [60297] [INFO] Listening at: http://0.0.0.0:8080 (60297)
+[2025-09-30 16:12:44 +0200] [60297] [INFO] Using worker: sync
+[2025-09-30 16:12:44 +0200] [60341] [INFO] Booting worker with pid: 60341
+[2025-09-30 16:12:44 +0200] [60342] [INFO] Booting worker with pid: 60342
+[2025-09-30 16:12:44 +0200] [60343] [INFO] Booting worker with pid: 60343
+[2025-09-30 16:12:44 +0200] [60344] [INFO] Booting worker with pid: 60344
+127.0.0.1 - - [30/Sep/2025:16:12:45 +0200] "GET / HTTP/1.1" 302 197 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:45 +0200] "GET /home HTTP/1.1" 302 285 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:45 +0200] "GET /login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome HTTP/1.1" 200 18079 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/appbuilder/css/bootstrap.min.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/appbuilder/css/fontawesome/fontawesome.min.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/appbuilder/css/fontawesome/brands.min.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/dist/main.6f9728400381098372e3.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/appbuilder/css/fontawesome/regular.min.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/appbuilder/css/fontawesome/solid.min.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/appbuilder/css/fontawesome/v4-shims.min.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/appbuilder/css/bootstrap-datepicker/bootstrap-datepicker3.min.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/appbuilder/css/select2/select2.min.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/appbuilder/css/select2/select2-bootstrap.min.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/appbuilder/css/flags/flags16.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/appbuilder/css/ab.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/dist/airflowDefaultTheme.c93fb34380b84747e945.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/dist/materialIcons.ce0f77d10d4dc51f5f07.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/dist/bootstrap-datetimepicker.min.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/dist/flash.39f43f5a4fffad4cd720.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/dist/loadingDots.84963375c34df3f17aab.css HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/appbuilder/js/jquery-latest.js HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/appbuilder/js/ab_actions.js HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/appbuilder/js/ab_filters.js HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:46 +0200] "GET /static/dist/main.6f9728400381098372e3.js HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:47 +0200] "GET /static/appbuilder/js/bootstrap.min.js HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:47 +0200] "GET /static/appbuilder/js/bootstrap-datepicker/bootstrap-datepicker.min.js HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:47 +0200] "GET /static/appbuilder/css/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 0 "http://localhost:8080/static/appbuilder/css/fontawesome/solid.min.css" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:47 +0200] "GET /static/appbuilder/js/ab.js HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:47 +0200] "GET /static/dist/moment.0fcb6b41ff6a87cf079e.js HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:47 +0200] "GET /static/dist/bootstrap-datetimepicker.min.js HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:47 +0200] "GET /static/dist/bootstrap3-typeahead.min.js HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:47 +0200] "GET /static/appbuilder/js/select2/select2.min.js HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:47 +0200] "GET /static/pin_32.png HTTP/1.1" 200 0 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+[[34m2025-09-30T16:12:54.966+0200[0m] {[34moverride.py:[0m2161} INFO[0m - Login Failed for user: airflow[0m
+127.0.0.1 - - [30/Sep/2025:16:12:54 +0200] "POST /login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome HTTP/1.1" 302 285 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:12:55 +0200] "GET /login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome HTTP/1.1" 200 18266 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+[[34m2025-09-30T16:13:20.490+0200[0m] {[34moverride.py:[0m2161} INFO[0m - Login Failed for user: airflow[0m
+127.0.0.1 - - [30/Sep/2025:16:13:20 +0200] "POST /login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome HTTP/1.1" 302 285 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:13:20 +0200] "GET /login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome HTTP/1.1" 200 18266 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+[[34m2025-09-30T16:13:51.511+0200[0m] {[34moverride.py:[0m1625} INFO[0m - Updated user Admin User[0m
+127.0.0.1 - - [30/Sep/2025:16:13:51 +0200] "POST /login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome HTTP/1.1" 302 239 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:13:51 +0200] "GET /home HTTP/1.1" 200 421205 "http://localhost:8080/login/?next=http%3A%2F%2Flocalhost%3A8080%2Fhome" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:13:52 +0200] "GET /static/dist/switch.dc36fb509ef65ad7f478.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:13:52 +0200] "GET /static/dist/dags.9e8536f34b3ae1c26e39.css HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:13:52 +0200] "GET /static/dist/d3.min.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:13:52 +0200] "GET /static/dist/dags.9e8536f34b3ae1c26e39.js HTTP/1.1" 200 0 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:13:53 +0200] "POST /blocked HTTP/1.1" 200 2 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:13:53 +0200] "POST /last_dagruns HTTP/1.1" 200 2 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:13:53 +0200] "POST /task_stats HTTP/1.1" 200 29211 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
+127.0.0.1 - - [30/Sep/2025:16:13:53 +0200] "POST /dag_stats HTTP/1.1" 200 9136 "http://localhost:8080/home" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"

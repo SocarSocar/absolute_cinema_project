@@ -48,16 +48,3 @@ services:
         python scripts/Load_Snowflake/upload_to_stage.py
     profiles: ["oneshot"]    
 
-# Services Airflow et FastAPI seront ajoutés ensuite.
-# Exemple d’ajout futur :
-#  api:
-#    build: .
-#    env_file: .env
-#    volumes:
-#      - ./:/app
-#    command: uvicorn src.api:app --host 0.0.0.0 --port 8000
-#    ports:
-#      - "8000:8000"
-#    depends_on:
-#      - app
-#    profiles: ["api"]

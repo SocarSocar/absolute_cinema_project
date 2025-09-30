@@ -1,0 +1,13 @@
+route:
+  receiver: 'mail'
+
+receivers:
+  - name: 'mail'
+    email_configs:
+      - to: 'ton.email@exemple.com'
+        from: 'monitor@exemple.com'
+        smarthost: 'smtp.exemple.com:587'
+        auth_username: 'monitor@exemple.com'
+        auth_identity: 'monitor@exemple.com'
+        auth_password: 'MOTDEPASSESMTP'
+        require_tls: true

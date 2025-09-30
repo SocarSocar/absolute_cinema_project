@@ -1,0 +1,10 @@
+[Unit]
+Description=Timer for full_update daily at 09:15 UTC
+
+[Timer]
+OnCalendar=*-*-* 09:15:00 UTC
+Persistent=true
+Unit=full_update.service
+
+[Install]
+WantedBy=timers.target

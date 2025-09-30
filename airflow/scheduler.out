@@ -17,3 +17,12 @@ ___  ___ |  / _  /   _  __/ _  / / /_/ /_ |/ |/ /
 [[34m2025-09-30T15:31:59.395+0200[0m] {[34msettings.py:[0m60} INFO[0m - Configured default timezone UTC[0m
 [2025-09-30T15:31:59.410+0200] {manager.py:393} WARNING - Because we cannot use more than 1 thread (parsing_processes = 2) when using sqlite. So we set parallelism to 1.
 [2025-09-30 15:31:59 +0200] [19642] [INFO] Booting worker with pid: 19642
+[[34m2025-09-30T15:36:41.075+0200[0m] {[34mscheduler_job_runner.py:[0m1598} INFO[0m - Adopting or resetting orphaned tasks for active dag runs[0m
+[[34m2025-09-30T15:41:22.842+0200[0m] {[34mscheduler_job_runner.py:[0m1598} INFO[0m - Adopting or resetting orphaned tasks for active dag runs[0m
+[[34m2025-09-30T15:46:04.552+0200[0m] {[34mscheduler_job_runner.py:[0m1598} INFO[0m - Adopting or resetting orphaned tasks for active dag runs[0m
+[[34m2025-09-30T15:50:44.001+0200[0m] {[34mscheduler_job_runner.py:[0m1598} INFO[0m - Adopting or resetting orphaned tasks for active dag runs[0m
+[[34m2025-09-30T15:55:26.167+0200[0m] {[34mscheduler_job_runner.py:[0m1598} INFO[0m - Adopting or resetting orphaned tasks for active dag runs[0m
+[[34m2025-09-30T16:00:07.536+0200[0m] {[34mscheduler_job_runner.py:[0m1598} INFO[0m - Adopting or resetting orphaned tasks for active dag runs[0m
+[[34m2025-09-30T16:04:46.655+0200[0m] {[34mscheduler_job_runner.py:[0m1598} INFO[0m - Adopting or resetting orphaned tasks for active dag runs[0m
+[[34m2025-09-30T16:09:27.690+0200[0m] {[34mscheduler_job_runner.py:[0m1598} INFO[0m - Adopting or resetting orphaned tasks for active dag runs[0m
+[[34m2025-09-30T16:14:08.695+0200[0m] {[34mscheduler_job_runner.py:[0m1598} INFO[0m - Adopting or resetting orphaned tasks for active dag runs[0m

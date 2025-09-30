@@ -1,0 +1,8 @@
+[Unit]
+Description=Absolute Cinema daily full_update
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/socar/projet_absolute_cinema
+ExecStart=/bin/bash -lc 'ops/cron/full_update.sh'
+TimeoutStartSec=36000

@@ -1,0 +1,2 @@
+# Tous les jours à 09:15 UTC (10:15 Paris en hiver, 11:15 en été)
+15 9 * * * /bin/bash -lc 'cd ~/projet_absolute_cinema && ops/cron/full_update.sh >> logs/cron_stdout.log 2>&1'

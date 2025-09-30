@@ -1,0 +1,20 @@
+groups:
+- name: basic
+  rules:
+  - alert: API_Down
+    expr: probe_success{job="blackbox_api"} == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "API indisponible >5m"
+      description: "Le probe HTTP /status échoue."
+
+  - alert: HighContainerCPU
+    expr: max by (container_label_com_docker_swarm_service_name) (rate(container_cpu_usage_seconds_total[5m])) > 0.8
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "CPU conteneur >80% 10m"
+      description: "Charge CPU soutenue."

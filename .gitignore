@@ -1,32 +1,35 @@
-# Envs / OS / IDE
-env/
-.venv/
-venv/
+# --- Python générique ---
 __pycache__/
 *.py[cod]
 *.pyo
-.DS_Store
-.idea/
-.vscode/
-.ipynb_checkpoints/
+*.pyd
+*.pkl
+*.ipynb_checkpoints/
+.venv/
+.venv/**
 
-# Données & sorties
-data
-state
-logs
-tmp/
-*.db
-*.sqlite*
-*.parquet
-*.feather
-*.csv.gz
-*.jsonl
-
-# Secrets
+# --- Env & secrets ---
 .env
 .env.*
-*.key
-*.pem
+!.env.example
+
+# --- VSCode / IDE ---
+.vscode/
+.idea/
+
+# --- Logs & artefacts généraux ---
 logs/
 logs/**
 *.log
+tmp/
+tmp/**
+
+# --- Airflow runtime (tout sous ./airflow) ---
+/airflow/airflow.db
+/airflow/airflow.cfg
+/airflow/*.pid
+/airflow/*.out
+/airflow/webserver_config.py
+/airflow/logs/
+/airflow/logs/**
+/airflow/dags/__pycache__/

@@ -25,11 +25,8 @@ tmp/
 tmp/**
 
 # --- Airflow runtime (tout sous ./airflow) ---
-/airflow/airflow.db
-/airflow/airflow.cfg
-/airflow/*.pid
-/airflow/*.out
-/airflow/webserver_config.py
-/airflow/logs/
-/airflow/logs/**
-/airflow/dags/__pycache__/
+/airflow/*
+!/airflow/dags/
+!/airflow/dags/**
+!/airflow/plugins/
+!/airflow/plugins/**

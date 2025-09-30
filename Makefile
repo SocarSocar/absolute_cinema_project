@@ -270,10 +270,10 @@ airflow-test:
 	source "$(AIRFLOW_VENV)/bin/activate" && \
 	  export AIRFLOW_HOME="$(AIRFLOW_HOME)" && \
 	  airflow dags test daily_full_update $$($(PYTHON_BIN) - <<'PY'
-from datetime import datetime, timezone
-print(datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
-PY
-)
+	from datetime import datetime, timezone
+	print(datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+	PY
+	)
 
 airflow-trigger:
 	source "$(AIRFLOW_VENV)/bin/activate" && \

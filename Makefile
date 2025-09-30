@@ -8,7 +8,7 @@
 # Exemple : "make up" = "docker compose up -d"
 # ------------------------------------------------------
 
-.PHONY: build up down sh logs upload clean full-update ps images prune
+.PHONY: build up down sh logs upload clean full-update ps images prune start-all stop-all
 
 # ------------------------------------------------------
 # Construit les images Docker (app, upload, full_update)
@@ -212,10 +212,10 @@ airflow-test:
 	source "$(AIRFLOW_VENV)/bin/activate" && \
 	  export AIRFLOW_HOME="$(AIRFLOW_HOME)" && \
 	  airflow dags test daily_full_update $$($(PYTHON_BIN) - <<'PY'
-from datetime import datetime, timezone
-print(datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
-PY
-)
+	from datetime import datetime, timezone
+	print(datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+	PY
+	)
 
 # 11) Déclenche un run réel du DAG (enregistré dans l'historique)
 airflow-trigger:
@@ -231,3 +231,22 @@ airflow-reset:
 	  airflow db reset -y
 	rm -f "$(AIRFLOW_WEB_PID)" "$(AIRFLOW_SCH_PID)" || true
 	@echo "[airflow-reset] OK"
+
+start-all:
+	@echo "[start-all] Démarrage de l'API FastAPI (app) + Airflow"
+	# 1) Lancer le conteneur app (FastAPI exposé sur http://localhost:8000)
+	docker compose up -d app
+	# 2) Lancer Airflow webserver + scheduler
+	$(MAKE) airflow-up
+	@echo "[start-all] Tout est lancé."
+	@echo "  -> API:     http://localhost:8000/docs"
+	@echo "  -> Airflow: http://localhost:8080"
+
+# ------------------------------------------------------
+# Stoppe toute la stack (app + Airflow)
+# ------------------------------------------------------
+stop-all:
+	@echo "[stop-all] Arrêt de l'API (app) et d'Airflow"
+	docker compose stop app || true
+	$(MAKE) airflow-stop
+	@echo "[stop-all] OK"

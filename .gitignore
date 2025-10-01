@@ -33,3 +33,6 @@ state/
 !/airflow/dags/**
 !/airflow/plugins/
 !/airflow/plugins/**
+data
+logs
+state

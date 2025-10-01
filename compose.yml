@@ -1,5 +1,4 @@
 services:
-  # Environnement de dev principal (tu te connectes dedans, tu lances scripts/tests/API)
   app:
     build: .
     container_name: absolute_app
@@ -13,8 +12,10 @@ services:
     ports:
       - "8000:8000"
     command: uvicorn app.api:app --host 0.0.0.0 --port 8000 --reload
+    networks:                # <-- ajoute ça
+      - default              # reste sur le réseau auto de compose
+      - mon_net              # ajoute le réseau partagé pour monitoring
 
-  # Raccourci "upload seul" — pratique pour tester sans lancer toute la stack
   upload:
     build: .
     container_name: absolute_upload
@@ -26,8 +27,12 @@ services:
       - ./logs:/app/logs
       - ./state:/app/state
     entrypoint: []
-    command: ["python","scripts/Load_Snowflake/upload_to_stage.py"] 
-    profiles: ["oneshot"]     # n’est pas lancé par défaut avec 'up'
+    command: ["python","scripts/Load_Snowflake/upload_to_stage.py"]
+    profiles: ["oneshot"]
+    networks:                # <-- ajoute ça aussi pour rester cohérent
+      - default
+      - mon_net
+
   full_update:
     build: .
     container_name: absolute_full_update
@@ -38,7 +43,7 @@ services:
       - ./data:/app/data
       - ./logs:/app/logs
       - ./state:/app/state
-    entrypoint: []  # IMPORTANT: on neutralise l’entrypoint
+    entrypoint: []
     command:
       - /bin/bash
       - -lc
@@ -46,5 +51,13 @@ services:
         set -euo pipefail
         python scripts/fetch_TMDB_API/run_all_scripts.py
         python scripts/Load_Snowflake/upload_to_stage.py
-    profiles: ["oneshot"]    
+    profiles: ["oneshot"]
+    networks:
+      - default
+      - mon_net
 
+# tout en bas :
+networks:
+  default: {}
+  mon_net:
+    external: true

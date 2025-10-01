@@ -295,14 +295,21 @@ airflow-reset:
 
 start-all:
 	@echo "[start-all] Démarrage API (app), Airflow, et Monitoring"
-	# 1) App (FastAPI)
-	docker compose up -d app
-	# 2) Airflow
-	$(MAKE) airflow-up
-	# 3) Monitoring
+	# 0) S'assure que le réseau externe mon_net existe (utile car monitoring l'attend)
+	- docker network create $(MON_NET) >/dev/null 2>&1 || true
+
+	# 1) Monitoring (utilise mon_net en external:true)
 	$(MAKE) monitoring-up
-	# 4) Relier l'app au réseau de monitoring (pour Blackbox/Prometheus)
-	$(MAKE) connect-monitor-net
+
+	# 2) App (FastAPI)
+	docker compose up -d app
+
+	# 3) Connecte l'app au réseau de monitoring (au cas où)
+	- docker network connect $(MON_NET) absolute_app >/dev/null 2>&1 || true
+
+	# 4) Airflow (webserver + scheduler)
+	$(MAKE) airflow-up
+
 	@echo "[start-all] OK."
 	@echo "  -> API:      http://localhost:8000/docs"
 	@echo "  -> Health:   http://localhost:8000/v1/health"
@@ -320,3 +327,9 @@ stop-all:
 	# Monitoring
 	$(MAKE) monitoring-down
 	@echo "[stop-all] OK"
+
+# reset dur si mon_net a un mauvais label (utiliser en dernier recours)
+mon-net-reset:
+	- docker compose -f $(MON_COMPOSE) down || true
+	- docker network rm $(MON_NET) || true
+	docker network create $(MON_NET)

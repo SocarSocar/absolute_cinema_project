@@ -1,6 +1,7 @@
 # app.py
 import streamlit as st
 import joblib
+import pandas as pd
 import numpy as np
 
 # -----------------------------
@@ -10,22 +11,22 @@ model = joblib.load("saved_model.pkl")
 imputer = joblib.load("imputer.pkl")
 features = joblib.load("features.pkl")
 
-st.set_page_config(page_title="Prédiction de la note d'un film", layout="wide")
+st.set_page_config(page_title="Prédiction Note Film", layout="wide")
 
 # -----------------------------
 # 2. Titre
 # -----------------------------
-st.title("🎬 Estimation de la note moyenne d'un film")
-st.write("Entrez les caractéristiques du film pour obtenir une estimation de sa note (sur 10).")
+st.title("🎬 Prédiction de la note d’un film")
+st.write("Entrez les caractéristiques du film pour estimer sa note moyenne (régression).")
 
 # -----------------------------
 # 3. Inputs interactifs
 # -----------------------------
 user_input = {}
-col1, col2, col3, col4 = st.columns(4)  # organisation en colonnes
+col1, col2, col3, col4 = st.columns(4)  # pour organiser joliment les sliders
 
 with col1:
-    user_input["BUDGET"] = st.number_sinput("Budget", min_value=0.0, value=1000000.0, step=100000.0)
+    user_input["BUDGET"] = st.number_input("Budget", min_value=0.0, value=1000000.0, step=100000.0)
     user_input["NB_GENRES"] = st.slider("Nombre de genres", 1, 10, 3)
 with col2:
     user_input["NB_PROVIDERS"] = st.slider("Nombre de providers", 0, 20, 2)
@@ -40,11 +41,16 @@ with col4:
 # -----------------------------
 # 4. Bouton de prédiction
 # -----------------------------
-if st.button("Prédire"):
-    X = np.array([list(user_input.values())])
-    X = imputer.transform(X)
-    pred = model.predict(X)[0]
+if st.button("Prédire la note"):
+    # Transformer en DataFrame avec noms de colonnes
+    X = pd.DataFrame([user_input], columns=features)
+
+    # Appliquer l’imputer
+    X_imputed = imputer.transform(X)
+
+    # Prédiction
+    pred = model.predict(X_imputed)[0]
 
     # Affichage du résultat
-    st.success(f"⭐ La note estimée du film est : **{pred:.2f} / 10**")
-
+    st.subheader("🎯 Résultat")
+    st.success(f"Le modèle estime une note moyenne de **{pred:.2f}/10** pour ce film.")

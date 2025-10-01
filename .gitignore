@@ -24,6 +24,9 @@ logs/**
 *.log
 tmp/
 tmp/**
+data/
+logs/
+state/
 
 # --- Airflow runtime (tout sous ./airflow) ---
 /airflow/*
@@ -31,3 +34,7 @@ tmp/**
 !/airflow/dags/**
 !/airflow/plugins/
 !/airflow/plugins/**
+data
+logs
+state
+airflow/dags/__pycache__/daily_full_update.cpython-312.pyc

@@ -23,9 +23,9 @@ logs/**
 *.log
 tmp/
 tmp/**
-/data/
-/logs/
-/state/
+data/
+logs/
+state/
 
 # --- Airflow runtime (tout sous ./airflow) ---
 /airflow/*
@@ -33,3 +33,6 @@ tmp/**
 !/airflow/dags/**
 !/airflow/plugins/
 !/airflow/plugins/**
+data
+logs
+state

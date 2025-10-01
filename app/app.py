@@ -1,6 +1,7 @@
 # app.py
 import streamlit as st
 import joblib
+import pandas as pd
 import numpy as np
 
 # -----------------------------
@@ -15,8 +16,8 @@ st.set_page_config(page_title="Prédiction Note Film", layout="wide")
 # -----------------------------
 # 2. Titre
 # -----------------------------
-st.title("🎬 Prédiction si un film aura une note >= 7")
-st.write("Entrez les caractéristiques du film pour obtenir la prédiction.")
+st.title("🎬 Prédiction de la note d’un film")
+st.write("Entrez les caractéristiques du film pour estimer sa note moyenne (régression).")
 
 # -----------------------------
 # 3. Inputs interactifs
@@ -40,17 +41,16 @@ with col4:
 # -----------------------------
 # 4. Bouton de prédiction
 # -----------------------------
-if st.button("Prédire"):
-    X = np.array([list(user_input.values())])
-    X = imputer.transform(X)
-    pred = model.predict(X)[0]
-    proba = model.predict_proba(X)[0]
+if st.button("Prédire la note"):
+    # Transformer en DataFrame avec noms de colonnes
+    X = pd.DataFrame([user_input], columns=features)
+
+    # Appliquer l’imputer
+    X_imputed = imputer.transform(X)
+
+    # Prédiction
+    pred = model.predict(X_imputed)[0]
 
     # Affichage du résultat
-    if pred == 1:
-        st.success("✅ Le film a de fortes chances d'avoir une note >= 7")
-    else:
-        st.error("❌ Le film aura probablement une note < 7")
-
-    st.subheader("Probabilités par classe")
-    st.bar_chart({"Probabilité < 7": [proba[0]], "Probabilité >= 7": [proba[1]]})
+    st.subheader("🎯 Résultat")
+    st.success(f"Le modèle estime une note moyenne de **{pred:.2f}/10** pour ce film.")

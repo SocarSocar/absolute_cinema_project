@@ -7,6 +7,7 @@ __pycache__/
 *.ipynb_checkpoints/
 .venv/
 .venv/**
+app/venv/
 
 # --- Env & secrets ---
 .env

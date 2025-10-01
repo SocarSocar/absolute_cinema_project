@@ -151,12 +151,12 @@ monitoring-open:
 connect-monitor-net:
 	@echo "[connect-monitor-net] Création réseau $(MON_NET) si absent"
 	- docker network create $(MON_NET) >/dev/null 2>&1 || true
-	@echo "[connect-monitor-net] Connexion du conteneur absolute_app -> $(MON_NET)"
-	- docker network connect $(MON_NET) absolute_app >/dev/null 2>&1 || true
-	@echo "[connect-monitor-net] Test rapide depuis $(MON_NET) -> http://absolute_app:8000/v1/health"
-	- docker run --rm --network $(MON_NET) curlimages/curl -sS http://absolute_app:8000/v1/health || true
-	@echo "[connect-monitor-net] Si tu préfères l'alias 'app', exécute:"
-	@echo "  docker network disconnect $(MON_NET) absolute_app && docker network connect --alias app $(MON_NET) absolute_app"
+	@echo "[connect-monitor-net] Connexion + alias 'app' -> absolute_app sur $(MON_NET)"
+	- docker network connect --alias app $(MON_NET) absolute_app >/dev/null 2>&1 || true
+	@echo "[connect-monitor-net] Test Blackbox → http://app:8000/v1/health"
+	- docker run --rm --network $(MON_NET) curlimages/curl -sS \
+	  'http://blackbox:9115/probe?module=http_2xx&target=http://app:8000/v1/health' \
+	  | grep -E "probe_success|probe_http_status_code" || true
 
 # Petit check santé (fonctionne si l'API est connectée à $(MON_NET))
 check-health:
@@ -294,29 +294,21 @@ airflow-reset:
 # =========================
 
 start-all:
-	@echo "[start-all] Démarrage API (app), Airflow, et Monitoring"
-	# 0) S'assure que le réseau externe mon_net existe (utile car monitoring l'attend)
-	- docker network create $(MON_NET) >/dev/null 2>&1 || true
-
-	# 1) Monitoring (utilise mon_net en external:true)
+	@echo "[start-all] Démarrage API (app), Monitoring, et Airflow"
+	# 1) Monitoring (réseau mon_net prêt et services UP)
 	$(MAKE) monitoring-up
-
 	# 2) App (FastAPI)
 	docker compose up -d app
-
-	# 3) Connecte l'app au réseau de monitoring (au cas où)
-	- docker network connect $(MON_NET) absolute_app >/dev/null 2>&1 || true
-
-	# 4) Airflow (webserver + scheduler)
+	# 3) Alias 'app' sur mon_net pour l'API
+	$(MAKE) connect-monitor-net
+	# 4) Airflow
 	$(MAKE) airflow-up
-
-	@echo "[start-all] OK."
+	@echo "[start-all] OK"
 	@echo "  -> API:      http://localhost:8000/docs"
 	@echo "  -> Health:   http://localhost:8000/v1/health"
-	@echo "  -> Airflow:  http://localhost:8080"
 	@echo "  -> Prom:     http://localhost:9090"
 	@echo "  -> Grafana:  http://localhost:3000"
-	@echo "  -> cAdvisor: http://localhost:8081"
+	@echo "  -> Airflow:  http://localhost:8080"
 
 stop-all:
 	@echo "[stop-all] Arrêt de l'API (app), Airflow et Monitoring"

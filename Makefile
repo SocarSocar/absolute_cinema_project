@@ -328,10 +328,11 @@ mon-net-reset:
 	docker network create $(MON_NET)
 
 # =========================
-# Streamlit (local)
+# Streamlit (local) — venv dans app/
 # =========================
-STREAMLIT_VENV := $(PROJECT_DIR)/venv
-STREAMLIT_APP := app/app.py
+STREAMLIT_DIR := $(PROJECT_DIR)/app
+STREAMLIT_VENV := $(STREAMLIT_DIR)/venv
+STREAMLIT_APP_REL := app.py
 STREAMLIT_PORT ?= 8501
 
 .PHONY: streamlit-venv streamlit streamlit-stop streamlit-open
@@ -339,23 +340,16 @@ STREAMLIT_PORT ?= 8501
 streamlit-venv:
 	@test -d "$(STREAMLIT_VENV)" || python3 -m venv "$(STREAMLIT_VENV)"
 	"$(STREAMLIT_VENV)/bin/python" -m pip install --upgrade pip
-	"$(STREAMLIT_VENV)/bin/python" -m pip install streamlit
+	"$(STREAMLIT_VENV)/bin/python" -m pip install streamlit joblib scikit-learn pandas numpy
 
-# Lance Streamlit sans 'source' (utilise directement le binaire du venv)
+# Lancement avec CWD = app/ pour préserver les chemins relatifs des .pkl
 streamlit:
-	"$(STREAMLIT_VENV)/bin/python" -m streamlit run "$(STREAMLIT_APP)" \
+	cd "$(STREAMLIT_DIR)" && "$(STREAMLIT_VENV)/bin/python" -m streamlit run "$(STREAMLIT_APP_REL)" \
 		--server.port=$(STREAMLIT_PORT) --server.address=0.0.0.0
 
-# Arrête Streamlit (process lancé en avant-plan dans le terminal)
+# Stoppe un streamlit lancé soit depuis app.py soit via chemin relatif
 streamlit-stop:
-	- pkill -f "streamlit run $(STREAMLIT_APP)" || true
+	- pkill -f "streamlit run app.py" || pkill -f "streamlit run $(STREAMLIT_APP_REL)" || true
 
 streamlit-open:
 	@echo "http://localhost:$(STREAMLIT_PORT)"
-
-PYTHON := ./venv/bin/python
-
-.PHONY: diag
-diag:
-	$(PYTHON) docs/diagrams/render_pipeline.py
-	@echo "Diagramme: docs/diagrams/pipeline.svg"

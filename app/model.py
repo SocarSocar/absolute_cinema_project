@@ -24,7 +24,7 @@ conn = snowflake.connector.connect(
 df = pd.read_sql("SELECT * FROM GLD_FACT_MOVIE_ML_NUMERIC", conn)
 conn.close()
 
-# 🎯 Cible = la note moyenne directement (régression)
+# Cible = la note moyenne directement (régression)
 y = df["LABEL_VOTE_AVERAGE"]
 
 # Colonnes à utiliser pour le modèle
@@ -49,5 +49,5 @@ joblib.dump(tree, "saved_model.pkl")
 joblib.dump(imputer, "imputer.pkl")
 joblib.dump(features, "features.pkl")
 
-print("✅ Modèle de régression et fichiers régénérés avec succès !")
+print("Modèle de régression et fichiers régénérés avec succès")
 

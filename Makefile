@@ -12,7 +12,7 @@
         start-all stop-all \
         monitoring-up monitoring-down monitoring-logs monitoring-reload monitoring-status monitoring-open \
         connect-monitor-net check-health \
-        airflow-help airflow-venv airflow-install airflow-init airflow-user airflow-up airflow-stop airflow-status airflow-logs airflow-open airflow-test airflow-trigger airflow-reset
+        airflow-help airflow-venv airflow-install airflow-init airflow-user airflow-up airflow-stop airflow-status airflow-logs airflow-open airflow-test airflow-trigger airflow-reset streamlit
 
 SHELL := /bin/bash
 
@@ -173,6 +173,7 @@ check-health:
 
 AIRFLOW_HOME := $(PROJECT_DIR)/airflow
 AIRFLOW_VENV := $(HOME)/.venvs/airflow
+STREAMLIT_VENV := $(HOME)/venv
 AIRFLOW_PORT ?= 8080
 AIRFLOW_VERSION ?= 2.9.3
 PYTHON_BIN := python3
@@ -325,3 +326,36 @@ mon-net-reset:
 	- docker compose -f $(MON_COMPOSE) down || true
 	- docker network rm $(MON_NET) || true
 	docker network create $(MON_NET)
+
+# =========================
+# Streamlit (local)
+# =========================
+STREAMLIT_VENV := $(PROJECT_DIR)/venv
+STREAMLIT_APP := app/app.py
+STREAMLIT_PORT ?= 8501
+
+.PHONY: streamlit-venv streamlit streamlit-stop streamlit-open
+
+streamlit-venv:
+	@test -d "$(STREAMLIT_VENV)" || python3 -m venv "$(STREAMLIT_VENV)"
+	"$(STREAMLIT_VENV)/bin/python" -m pip install --upgrade pip
+	"$(STREAMLIT_VENV)/bin/python" -m pip install streamlit
+
+# Lance Streamlit sans 'source' (utilise directement le binaire du venv)
+streamlit:
+	"$(STREAMLIT_VENV)/bin/python" -m streamlit run "$(STREAMLIT_APP)" \
+		--server.port=$(STREAMLIT_PORT) --server.address=0.0.0.0
+
+# Arrête Streamlit (process lancé en avant-plan dans le terminal)
+streamlit-stop:
+	- pkill -f "streamlit run $(STREAMLIT_APP)" || true
+
+streamlit-open:
+	@echo "http://localhost:$(STREAMLIT_PORT)"
+
+PYTHON := ./venv/bin/python
+
+.PHONY: diag
+diag:
+	$(PYTHON) docs/diagrams/render_pipeline.py
+	@echo "Diagramme: docs/diagrams/pipeline.svg"

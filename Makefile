@@ -352,3 +352,10 @@ streamlit-stop:
 
 streamlit-open:
 	@echo "http://localhost:$(STREAMLIT_PORT)"
+
+PYTHON := ./venv/bin/python
+
+.PHONY: diag
+diag:
+	$(PYTHON) docs/diagrams/render_pipeline.py
+	@echo "Diagramme: docs/diagrams/pipeline.svg"

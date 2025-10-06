@@ -8,6 +8,7 @@ __pycache__/
 .venv/
 .venv/**
 app/venv/
+venv/
 
 
 # --- Env & secrets ---

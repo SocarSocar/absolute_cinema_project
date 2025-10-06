@@ -9,6 +9,7 @@ __pycache__/
 .venv/**
 app/venv/
 
+
 # --- Env & secrets ---
 .env
 .env.*
@@ -38,3 +39,4 @@ data
 logs
 state
 airflow/dags/__pycache__/daily_full_update.cpython-312.pyc
+
